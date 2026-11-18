@@ -45,7 +45,6 @@ hidden_imports = [
     "aileron.output.base",
     "aileron.output.gamepad",
     "aileron.output.linux",
-    "aileron.output.macos",
     "aileron.output.null",
     "aileron.output.windows",
     "aileron.plugins",
