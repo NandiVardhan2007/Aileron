@@ -2,7 +2,7 @@
 
 <div align="center">
 
-[![Release](https://img.shields.io/badge/release-v0.1.0--rc1-blue.svg?style=flat-square)](https://github.com/aileron-project/aileron/releases)
+[![Release](https://img.shields.io/badge/release-v0.1.0--rc1-blue.svg?style=flat-square)](https://github.com/NandiVardhan2007/Aileron/releases)
 [![Python](https://img.shields.io/badge/python-3.11%20%7C%203.12-blue.svg?style=flat-square)](https://www.python.org/)
 [![Platforms](https://img.shields.io/badge/platforms-Windows%2010%2F11%20%7C%20Linux-brightgreen.svg?style=flat-square)](#platform-support)
 [![Latency](https://img.shields.io/badge/latency%20p95-%E2%89%A4%2044.3%20ms-success.svg?style=flat-square)](docs/benchmarks.md)
@@ -80,7 +80,7 @@ Aileron is engineered and optimized for **Windows 10/11** and **Linux**:
 Clone the repository and synchronize dependencies:
 
 ```bash
-git clone https://github.com/aileron-project/aileron.git
+git clone https://github.com/NandiVardhan2007/Aileron.git
 cd Aileron
 
 # Using uv (fastest)
