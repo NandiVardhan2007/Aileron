@@ -4,6 +4,14 @@ Changing a default threshold counts as a behavior change and must be listed.
 
 ## [Unreleased]
 ### Added
+- **M6 Handlebar & Polish:**
+  - Single-hand Handlebar profile (`HandlebarProfile`) mapping wrist roll angle to steering axis ($\pm 35^\circ$), with One Euro filtering, deadzone, and expo shaping.
+  - Multi-source throttle options: thumb curl, index extension, or wrist twist.
+  - Off-hand brake pedal integration for two-hand motorbike control.
+  - Profile import/export engine (`aileron.profiles`) with schema migrations (`schema_version = 1`), legacy v0->v1 upgrade path, and dependency-free TOML serialization.
+  - Interactive onboarding flow (`OnboardingFlow`) with camera check, handedness verification, pinch practice, and safety briefing.
+  - Accessibility manager (`AccessibilityManager`) with stability mode (tremor suppression, heavy smoothing, generous deadzones) and dwell click (`DwellClickDetector`, hover-to-click).
+  - Dual-mode HUD overlay (`HudManager`): Compact (minimal state chips and cursor halo) and Full (telemetry, dwell rings, axis monitors).
 - **M5 Cruise:**
   - Cockpit mode engine (`CockpitEngine`) coordinating simulator control profiles and mode-toggle safety gating.
   - Two-hand Yoke profile (`YokeProfile`) calculating steering wheel angle from $L_9$ vectors, with calibrated neutral subtraction, 3° deadzone, 0.35 expo curve, 45° lock-to-lock scaling, and One Euro filtering (`SIGNAL §8`).

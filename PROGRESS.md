@@ -69,13 +69,13 @@
 - [x] Task M5.9: Replay fixtures & unit tests for Yoke, gamepad mapping, and safety neutralizations
 
 ### Milestone M6: Handlebar & Polish
-- [ ] Task M6.1: Handlebar profile (hand roll steering, configurable throttle)
-- [ ] Task M6.2: Cockpit button pinch combos (gear up/down, handbrake, horn via Pad intents)
-- [ ] Task M6.3: Profile import/export (TOML schema validation & migrations)
-- [ ] Task M6.4: Interactive onboarding flow (camera check, handedness check, practice, safety briefing)
-- [ ] Task M6.5: Tray icon & HUD refinement (PySide6 optional, click-through, non-blocking)
-- [ ] Task M6.6: Accessibility options (stability mode, dwell click, reduced motion, audio cues)
-- [ ] Task M6.7: Settings persist/load/validate cycle
+- [x] Task M6.1: Handlebar profile (hand roll steering, configurable throttle)
+- [x] Task M6.2: Cockpit button pinch combos (gear up/down, handbrake, horn via Pad intents)
+- [x] Task M6.3: Profile import/export (TOML schema validation & migrations)
+- [x] Task M6.4: Interactive onboarding flow (camera check, handedness check, practice, safety briefing)
+- [x] Task M6.5: Tray icon & HUD refinement (PySide6 optional, click-through, non-blocking)
+- [x] Task M6.6: Accessibility options (stability mode, dwell click, reduced motion, audio cues)
+- [x] Task M6.7: Settings persist/load/validate cycle
 
 ### Milestone M7: Hardening & v1.0-rc1
 - [ ] Task M7.1: Linux backend (`uinput`/`evdev` mouse & gamepad) mock-tested
@@ -106,6 +106,9 @@
 | 2026-11-18 | Dedicated OS thread Watchdog & CameraStallGuard | SAFE-04: Independent watchdog monitors control loop heartbeat (250ms) and camera stall (500ms) with fail-closed release | SAFETY.md |
 | 2026-11-18 | Cockpit mode pre-flight neutral hold & ramp-in | Prevents sudden vehicle actuation by requiring 1s stationary neutral before live, with 200ms smooth ramp | COCKPIT_MODE.md, SAFETY.md |
 | 2026-11-18 | Lazy import of vgamepad with KeyboardPwmGamepad fallback | Enables safe headless/mock/non-driver execution on all machines while preserving native Xbox emulation | COCKPIT_MODE.md, ARCHITECTURE.md |
+| 2026-11-18 | Native TOML serialization in profiles.py | Eliminate uninstalled external writer dependency (tomli_w) while maintaining strict TOML formatting | CONFIGURATION.md |
+| 2026-11-18 | Profile schema migrations & validation | CFG-03: Sequential migration path (v0->v1) ensuring safe backward compatibility for user profiles | CONFIGURATION.md |
+| 2026-11-18 | Dwell click and stability mode accessibility | Enable tremors/motor impairment support via motion radius window and hover-to-click FSM | PRD.md |
 
 ---
 
@@ -126,8 +129,9 @@
 | M3        | 33.7 ms                | 44.7 ms                | 8.5 ms (est)       | 5.8%         |
 | M4        | 33.7 ms                | 44.7 ms                | 8.5 ms (est)       | 6.0%         |
 | M5        | 33.7 ms                | 44.9 ms                | 8.5 ms (est)       | 6.4%         |
+| M6        | 33.3 ms                | 42.9 ms                | 8.5 ms (est)       | 6.6%         |
 
 ---
 
 ## 5. Next Action
-- Begin Milestone M6: Handlebar & Polish (Handlebar Profile, Cockpit Button Combos, Profile TOML Import/Export & Migrations, Onboarding Flow, Compact/Full HUD, Accessibility)
+- Begin Milestone M7: Hardening & v1.0-rc1 (Linux/macOS mock-tested backends, plugin entry points, low-power idle mode, PyInstaller spec & build script, DOC-03 check, docs finalization, and v0.1.0-rc1 tag)

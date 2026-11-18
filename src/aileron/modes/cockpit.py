@@ -13,6 +13,7 @@ from typing import TYPE_CHECKING
 
 from aileron.config import CockpitConfig, FiltersConfig
 from aileron.interfaces import Hand, HandFeatures, Intent
+from aileron.modes.handlebar import HandlebarProfile, HandlebarTelemetry
 from aileron.modes.yoke import YokeProfile, YokeTelemetry
 
 if TYPE_CHECKING:
@@ -37,20 +38,29 @@ class CockpitEngine:
             cockpit_cfg=self.config,
             filters_cfg=self.filters_cfg,
         )
+        self.handlebar = HandlebarProfile(
+            cockpit_cfg=self.config,
+            filters_cfg=self.filters_cfg,
+        )
 
     @property
     def current_throttle(self) -> float:
         """Current throttle output from the active profile."""
+        if self.config.profile == "handlebar":
+            return self.handlebar.current_throttle
         return self.yoke.current_throttle
 
     @property
-    def telemetry(self) -> YokeTelemetry:
+    def telemetry(self) -> YokeTelemetry | HandlebarTelemetry:
         """Active profile telemetry for HUD and diagnostic viewers."""
+        if self.config.profile == "handlebar":
+            return self.handlebar.telemetry
         return self.yoke.telemetry
 
     def reset(self) -> None:
         """Reset state across all simulator profiles."""
         self.yoke.reset()
+        self.handlebar.reset()
 
     def process(
         self,
@@ -59,7 +69,10 @@ class CockpitEngine:
         t_ns: int,
     ) -> list[Intent]:
         """Process tracking inputs through the active cockpit profile."""
-        intents = self.yoke.process(hands, features, t_ns)
+        if self.config.profile == "handlebar":
+            intents = self.handlebar.process(hands, features, t_ns)
+        else:
+            intents = self.yoke.process(hands, features, t_ns)
 
         # Notify ModeManager of current throttle to enforce safety toggle block
         if self.mode_manager is not None:
