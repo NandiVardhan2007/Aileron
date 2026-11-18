@@ -30,6 +30,7 @@ class ModeManager:
         self.config = config or CockpitConfig()
         self.mode: ControlMode = initial_mode
         self._last_mode_change_reason: str = "initial"
+        self.current_throttle: float = 0.0
 
     @property
     def last_reason(self) -> str:
@@ -37,9 +38,10 @@ class ModeManager:
         return self._last_mode_change_reason
 
     def toggle_mode(
-        self, current_throttle: float = 0.0, reason: str = "Shaka dwell"
+        self, current_throttle: float | None = None, reason: str = "Shaka dwell"
     ) -> tuple[ControlMode, list[Intent]]:
         """Toggle mode between POINTER and COCKPIT, enforcing safety throttle block."""
+        throttle = self.current_throttle if current_throttle is None else current_throttle
         if self.mode == ControlMode.POINTER:
             self.mode = ControlMode.COCKPIT
             self._last_mode_change_reason = reason
@@ -47,7 +49,7 @@ class ModeManager:
             return self.mode, [ReleaseAll()]
 
         # Cockpit -> Pointer: Check throttle block safety rule
-        if current_throttle > self.config.mode_toggle_block_throttle:
+        if throttle > self.config.mode_toggle_block_throttle:
             # Blocked: vehicle has active throttle!
             return self.mode, []
 

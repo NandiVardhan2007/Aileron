@@ -4,6 +4,17 @@ Changing a default threshold counts as a behavior change and must be listed.
 
 ## [Unreleased]
 ### Added
+- **M5 Cruise:**
+  - Cockpit mode engine (`CockpitEngine`) coordinating simulator control profiles and mode-toggle safety gating.
+  - Two-hand Yoke profile (`YokeProfile`) calculating steering wheel angle from $L_9$ vectors, with calibrated neutral subtraction, 3° deadzone, 0.35 expo curve, 45° lock-to-lock scaling, and One Euro filtering (`SIGNAL §8`).
+  - Dual index-extension pedal mapping: right index throttle (`RT`) and left index brake (`LT`) with deadzone (0.05), curve shaping, and fast One Euro filtering (`SIGNAL §10`).
+  - Pre-flight neutral hold (1.0 s) and axis ramp-in (200 ms) preventing sudden vehicle jumps on engage.
+  - Hand-loss safety neutralization: single-hand hold for 150 ms followed by fail-safe neutralization to 0.0 or brake (`SAFE-02`).
+  - Mode-toggle safety block preventing switching to Pointer mode when throttle > 0.3 (`SAFE-07`).
+  - Cockpit button pinch combinations: gear up (`RB`), gear down (`LB`), handbrake (`X`), horn (`Y`).
+  - Virtual gamepad backends: `VGamepadBackend` (Windows lazy import, ViGEmBus detection) and `KeyboardPwmGamepad` universal software fallback.
+  - Pre-flight calibration wizard (`CalibrationWizard`) computing neutral wheel angle, lock-to-lock limits, and trigger finger range.
+  - Interactive gamepad axis and trigger viewer CLI (`--gamepad-test`).
 - **M4 Pressurize:**
   - Independent watchdog thread (`Watchdog`) running on dedicated OS thread, monitoring heartbeat and neutralizing backends on stall > 250 ms (`SAFE-04`).
   - Camera-stall guard (`CameraStallGuard`) monitoring frame delivery cadence and enforcing hand-lost failsafe neutralization on video stalls > 500 ms (`SAFE-04`).

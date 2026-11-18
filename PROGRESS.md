@@ -58,15 +58,15 @@
 - [x] Task M4.7: Complete safety test suite (`pytest -m safety`, 100% pass, ≥90% coverage on safety/)
 
 ### Milestone M5: Cruise (Cockpit Mode & Yoke Profile)
-- [ ] Task M5.1: Cockpit mode engine & Yoke profile `aileron/modes/cockpit.py`, `aileron/modes/yoke.py`
-- [ ] Task M5.2: Two-hand wheel steering angle, deadzone, expo curve, and One Euro smoothing
-- [ ] Task M5.3: Index-extension throttle and brake mapping
-- [ ] Task M5.4: Neutral hold (1 s), axis ramp-in (200 ms), on_loss behavior, throttle mode-toggle block
-- [ ] Task M5.5: Gamepad output interfaces, `NullGamepad`, `KeyboardPwmGamepad` fallback
-- [ ] Task M5.6: `VGamepad` backend (Windows lazy import, driver detection, graceful fallback)
-- [ ] Task M5.7: Pre-flight calibration wizard (neutral angle, lock-to-lock, trigger min/max)
-- [ ] Task M5.8: `--gamepad-test` axis & trigger viewer (text / overlay)
-- [ ] Task M5.9: Replay fixtures & unit tests for Yoke, gamepad mapping, and safety neutralizations
+- [x] Task M5.1: Cockpit mode engine & Yoke profile `aileron/modes/cockpit.py`, `aileron/modes/yoke.py`
+- [x] Task M5.2: Two-hand wheel steering angle, deadzone, expo curve, and One Euro smoothing
+- [x] Task M5.3: Index-extension throttle and brake mapping
+- [x] Task M5.4: Neutral hold (1 s), axis ramp-in (200 ms), on_loss behavior, throttle mode-toggle block
+- [x] Task M5.5: Gamepad output interfaces, `NullGamepad`, `KeyboardPwmGamepad` fallback
+- [x] Task M5.6: `VGamepad` backend (Windows lazy import, driver detection, graceful fallback)
+- [x] Task M5.7: Pre-flight calibration wizard (neutral angle, lock-to-lock, trigger min/max)
+- [x] Task M5.8: `--gamepad-test` axis & trigger viewer (text / overlay)
+- [x] Task M5.9: Replay fixtures & unit tests for Yoke, gamepad mapping, and safety neutralizations
 
 ### Milestone M6: Handlebar & Polish
 - [ ] Task M6.1: Handlebar profile (hand roll steering, configurable throttle)
@@ -104,6 +104,8 @@
 | 2026-11-18 | Neutral frame injection on all mode/session transitions | SAFE-05 / SAFE-07: Guaranteed ReleaseAll intent emitted whenever transitioning away from active control | SAFETY.md, ARCHITECTURE.md |
 | 2026-11-18 | Continuous motion coalescing in SafetyGate | SAFE-07: Coalesces multi-MoveTo/Axis/Trigger per tick while strictly capping discrete events to 50 | SAFETY.md, ARCHITECTURE.md |
 | 2026-11-18 | Dedicated OS thread Watchdog & CameraStallGuard | SAFE-04: Independent watchdog monitors control loop heartbeat (250ms) and camera stall (500ms) with fail-closed release | SAFETY.md |
+| 2026-11-18 | Cockpit mode pre-flight neutral hold & ramp-in | Prevents sudden vehicle actuation by requiring 1s stationary neutral before live, with 200ms smooth ramp | COCKPIT_MODE.md, SAFETY.md |
+| 2026-11-18 | Lazy import of vgamepad with KeyboardPwmGamepad fallback | Enables safe headless/mock/non-driver execution on all machines while preserving native Xbox emulation | COCKPIT_MODE.md, ARCHITECTURE.md |
 
 ---
 
@@ -123,8 +125,9 @@
 | M2        | 33.6 ms                | 44.6 ms                | 8.5 ms (est)       | 5.4%         |
 | M3        | 33.7 ms                | 44.7 ms                | 8.5 ms (est)       | 5.8%         |
 | M4        | 33.7 ms                | 44.7 ms                | 8.5 ms (est)       | 6.0%         |
+| M5        | 33.7 ms                | 44.9 ms                | 8.5 ms (est)       | 6.4%         |
 
 ---
 
 ## 5. Next Action
-- Begin Milestone M5: Cruise (Cockpit Mode & Yoke Profile, Steering Angle, Throttle/Brake Mapping, Gamepad Interfaces & VGamepad Backend, Calibration Wizard, Axis Viewer)
+- Begin Milestone M6: Handlebar & Polish (Handlebar Profile, Cockpit Button Combos, Profile TOML Import/Export & Migrations, Onboarding Flow, Compact/Full HUD, Accessibility)

@@ -9,6 +9,7 @@ from pathlib import Path
 from aileron.config import load_config
 from aileron.output.null import NullBackend
 from aileron.replay import ReplayReader
+from aileron.ui.gamepad_viewer import run_gamepad_test
 
 
 def handle_panic() -> None:
@@ -93,6 +94,10 @@ def main() -> None:
 
     if args.print_config:
         print(json.dumps(cfg.model_dump(), indent=2))
+        sys.exit(0)
+
+    if args.gamepad_test:
+        run_gamepad_test(max_ticks=args.headless_frames)
         sys.exit(0)
 
     if args.replay:
