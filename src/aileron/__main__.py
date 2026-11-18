@@ -14,13 +14,13 @@ import cv2
 
 from aileron.capture import CaptureThread
 from aileron.config import AileronConfig, load_config
-from aileron.control import ControlPipeline
-from aileron.interfaces import Frame, HandFrame
+from aileron.control import ControlPipeline, StepResult
+from aileron.interfaces import Frame, HandFrame, SessionState
 from aileron.output.base import OutputBackend
 from aileron.output.null import NullBackend
 from aileron.replay import ReplayReader
 from aileron.ui.gamepad_viewer import run_gamepad_test
-from aileron.ui.overlay import draw_skeleton
+from aileron.ui.overlay import draw_hud
 from aileron.vision.tracker import HandTracker, ensure_model_file
 
 logger = logging.getLogger("aileron")
@@ -104,15 +104,43 @@ def _init_vision(config: AileronConfig) -> tuple[CaptureThread, HandTracker | No
     return capture, tracker
 
 
-def _render_hud(show_hud: bool, frame: Frame | None, hand_frame: HandFrame | None) -> bool:
+def _render_hud(
+    show_hud: bool,
+    frame: Frame | None,
+    hand_frame: HandFrame | None,
+    pipeline: ControlPipeline | None = None,
+    step_result: StepResult | None = None,
+    fps: float | None = None,
+) -> bool:
     """Render skeleton and status overlay; returns True if user pressed quit key."""
     if not show_hud or frame is None or frame.image is None:
         return False
 
-    canvas = frame.image.copy()
-    if hand_frame is not None:
-        for h in hand_frame.hands:
-            draw_skeleton(canvas, h)
+    session_state = SessionState.DISARMED
+    mode_str = "POINTER"
+    dwell_progress = None
+    cursor_anchor = None
+    is_frozen = False
+
+    if pipeline is not None:
+        session_state = pipeline.session_manager.state
+        mode_str = pipeline.mode_manager.mode.name
+        is_frozen = getattr(pipeline.engine.mapper, "_click_freeze", False)
+
+    if step_result is not None and step_result.output is not None:
+        dwell_progress = step_result.output.signals.dwell_progress
+        cursor_anchor = step_result.output.signals.cursor
+
+    canvas = draw_hud(
+        frame.image,
+        session_state=session_state,
+        mode_str=mode_str,
+        hand_frame=hand_frame,
+        fps=fps,
+        dwell_progress=dwell_progress,
+        cursor_anchor=cursor_anchor,
+        is_frozen=is_frozen,
+    )
     cv2.imshow("Aileron", canvas)
     key = cv2.waitKey(1) & 0xFF
     return key in (27, ord("q"))
@@ -166,10 +194,16 @@ def run_live(
                 tracker.process_frame(frame)
                 hand_frame = tracker.get_latest_hand_frame(timeout_s=0.01)
 
-            pipeline.step(hand_frame)
+            step_result = pipeline.step(hand_frame)
             frame_count += 1
 
-            if _render_hud(show_hud, frame, hand_frame):
+            if _render_hud(
+                show_hud,
+                frame,
+                hand_frame,
+                pipeline=pipeline,
+                step_result=step_result,
+            ):
                 break
 
             if Path(".aileron_panic").exists():
@@ -195,6 +229,11 @@ def main() -> None:
     parser = argparse.ArgumentParser(
         prog="aileron",
         description="Aileron: Touchless air-mouse and simulator controller driven by MediaPipe",
+    )
+    parser.add_argument(
+        "--live",
+        action="store_true",
+        help="Arm live input backend (sets backend to auto/mouse instead of null)",
     )
     parser.add_argument(
         "--backend",
@@ -248,9 +287,10 @@ def main() -> None:
 
     # Launch live control loop
     show_hud = not args.no_hud and args.headless_frames is None
+    backend_choice = "auto" if args.live else args.backend
     run_live(
         config=cfg,
-        backend_choice=args.backend,
+        backend_choice=backend_choice,
         show_hud=show_hud,
         debug=args.debug,
         max_frames=args.headless_frames,

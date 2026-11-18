@@ -87,6 +87,53 @@ def draw_skeleton(
     )
 
 
+_GUIDANCE_MAP: dict[SessionState, tuple[str, tuple[int, int, int]]] = {
+    SessionState.DISARMED: ("SHOW OPEN PALM TO ARM (HOLD 0.4s)", COLOR_AMBER),
+    SessionState.ARMED: (
+        "ARMED: MOVE HAND to move cursor | PINCH to click | FIST to pause",
+        COLOR_GREEN,
+    ),
+    SessionState.STANDBY: ("PAUSED (STANDBY) | SHOW OPEN PALM TO RESUME", COLOR_BLUE),
+}
+
+
+def _draw_guidance(out: np.ndarray, session_state: SessionState, w: int, h: int) -> None:
+    """Draw bottom operator instruction banner."""
+    guide_text, guide_color = _GUIDANCE_MAP.get(
+        session_state, ("PRESS CTRL+ALT+ESC TO RESET", COLOR_RED)
+    )
+    cv2.putText(
+        out,
+        guide_text,
+        (max(15, w // 2 - int(len(guide_text) * 4.2)), h - 18),
+        cv2.FONT_HERSHEY_SIMPLEX,
+        0.5,
+        guide_color,
+        2,
+        cv2.LINE_AA,
+    )
+
+
+def _draw_telemetry(out: np.ndarray, fps: float | None, latency_ms: float | None, w: int) -> None:
+    """Draw FPS and latency telemetry in the top right."""
+    telem_parts = []
+    if fps is not None:
+        telem_parts.append(f"{fps:.1f} FPS")
+    if latency_ms is not None:
+        telem_parts.append(f"{latency_ms:.1f} ms")
+    if telem_parts:
+        cv2.putText(
+            out,
+            " | ".join(telem_parts),
+            (w - 180, 35),
+            cv2.FONT_HERSHEY_SIMPLEX,
+            0.5,
+            COLOR_WHITE,
+            1,
+            cv2.LINE_AA,
+        )
+
+
 def draw_hud(
     canvas: np.ndarray,
     session_state: SessionState = SessionState.DISARMED,
@@ -108,7 +155,6 @@ def draw_hud(
             skel_color = COLOR_GREEN if hand.score >= SCORE_CONFIDENT_THRESHOLD else COLOR_AMBER
             draw_skeleton(out, hand, color=skel_color)
     else:
-        # Prompt if no hands visible
         cv2.putText(
             out,
             "Searching for hand...",
@@ -180,23 +226,7 @@ def draw_hud(
                 )
                 y_dwell += 22
 
-    # Telemetry metrics (Top Right)
-    telem_parts = []
-    if fps is not None:
-        telem_parts.append(f"{fps:.1f} FPS")
-    if latency_ms is not None:
-        telem_parts.append(f"{latency_ms:.1f} ms")
-    if telem_parts:
-        telem_str = " | ".join(telem_parts)
-        cv2.putText(
-            out,
-            telem_str,
-            (w - 180, 35),
-            cv2.FONT_HERSHEY_SIMPLEX,
-            0.5,
-            COLOR_WHITE,
-            1,
-            cv2.LINE_AA,
-        )
+    _draw_telemetry(out, fps, latency_ms, w)
+    _draw_guidance(out, session_state, w, h)
 
     return out

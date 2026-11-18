@@ -21,8 +21,7 @@ goto :end
 
 :live_run
 echo [WARNING] Arming live input backend! Starts DISARMED. Hold open palm to arm.
-shift
-uv run aileron --backend auto %*
+uv run aileron %*
 goto :end
 
 :end
