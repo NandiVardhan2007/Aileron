@@ -27,11 +27,34 @@ class CaptureThread:
         self._cap: cv2.VideoCapture | object | None = None
         self._thread: threading.Thread | None = None
         self._running: bool = False
-        self._lock = threading.Lock()
+        self._lock = threading.RLock()
         self._has_frame = threading.Condition(self._lock)
         self._latest_frame: Frame | None = None
         self._seq: int = 0
         self._error: Exception | None = None
+        self._idle: bool = False
+
+    @property
+    def is_idle(self) -> bool:
+        """Whether capture thread is in low-power idle mode."""
+        with self._lock:
+            return self._idle
+
+    @property
+    def is_camera_open(self) -> bool:
+        """Whether physical camera handle is currently acquired."""
+        with self._lock:
+            return self._cap is not None
+
+    def set_idle(self, idle: bool) -> None:
+        """Toggle low-power idle mode (releases camera hardware when idle)."""
+        with self._lock:
+            if self._idle == idle:
+                return
+            self._idle = idle
+            if idle:
+                self._release_camera()
+            self._has_frame.notify_all()
 
     @property
     def latest_error(self) -> Exception | None:
@@ -103,9 +126,24 @@ class CaptureThread:
         target_interval = 1.0 / max(1, self.config.fps)
 
         while self._running:
-            t0 = time.monotonic()
+            with self._lock:
+                idle = self._idle
+
+            if idle:
+                with self._has_frame:
+                    self._has_frame.wait(timeout=0.05)
+                continue
+
             if self._cap is None:
-                break
+                try:
+                    self._open_camera()
+                except Exception as e:
+                    with self._lock:
+                        self._error = e
+                    time.sleep(RECONNECT_SLEEP_SEC)
+                    continue
+
+            t0 = time.monotonic()
 
             read_fn: Callable[[], tuple[bool, np.ndarray | None]] | None = getattr(
                 self._cap, "read", None

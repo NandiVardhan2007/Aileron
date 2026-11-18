@@ -45,10 +45,33 @@ Cockpit profiles: **Yoke** (two-hand wheel for cars), **Handlebar** (bikes), **S
 ## Quick start
 
 ```bash
+# 1. Install dependencies
 uv sync
-uv run python -m aileron --backend null --debug    # safe: overlay only, no real input
-uv run python -m aileron                           # live (starts DISARMED, show open palm to arm)
+
+# 2. Safe dry-run (Overlay & telemetry only, no OS input injection)
+uv run aileron --backend null --debug
+
+# 3. Interactive calibration wizard (Lock-to-lock, neutral wheel angle, trigger bounds)
+uv run python -m aileron.calibration.wizard --profile default
+
+# 4. Interactive gamepad axis and trigger ASCII viewer
+uv run aileron --gamepad-test
+
+# 5. Live control (Starts DISARMED; hold open palm 0.4s to arm; Ctrl+Alt+Esc to panic stop)
+uv run aileron
 ```
+
+## CLI flags reference
+
+- `--backend {auto,null,mouse,gamepad}`: Select output backend (default: `auto`).
+- `--profile NAME`: Layer user profile from `config/profiles/<NAME>.toml`.
+- `--debug`: Enable live HUD telemetry chips and OpenCV overlay.
+- `--no-hud`: Run headless without preview overlay window.
+- `--replay FILE`: Replay synthetic or recorded JSONL landmark session.
+- `--record FILE`: Record tracked hand landmarks to JSONL format (`PRIV-02`).
+- `--gamepad-test`: Run live terminal-based axis and trigger visualizer.
+- `--panic`: Broadcast an emergency neutral-release signal to running instances.
+- `--print-config`: Print active resolved configuration in TOML format.
 
 ## Safety first
 
@@ -76,7 +99,7 @@ switch. Read `docs/SAFETY.md` before using Cockpit mode with a real game.
 
 ## Status
 
-Pre-alpha, design phase. See `docs/ROADMAP.md`.
+**Release Candidate v0.1.0-rc1** (Milestones M0–M7 implemented, verified via unit, replay, and safety suites). See `docs/ROADMAP.md`.
 
 ## License
 

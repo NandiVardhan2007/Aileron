@@ -33,5 +33,6 @@
 | **M4 Pressurize** | 2026-11-18 | ControlPipeline: watchdog + camera stall guard + SafetyGate coalescing + blackbox | 500 | 0.14 ms (pipe) / 33.7 ms (total) | 0.21 ms (pipe) / 44.7 ms (total) | 1.15 ms (pipe) | GREEN (≤ 60 ms) |
 | **M5 Cruise** | 2026-11-18 | Cockpit mode: Yoke profile (steering angle + index throttle/brake One Euro) | 500 | 0.23 ms (pipe) / 33.8 ms (total) | 0.41 ms (pipe) / 44.9 ms (total) | 0.95 ms (pipe) | GREEN (≤ 50 ms) |
 | **M6 Polish** | 2026-11-18 | Handlebar profile + stability mode + accessibility + HUD overlay modes | 500 | 0.26 ms (pipe) / 33.3 ms (total) | 0.44 ms (pipe) / 42.9 ms (total) | 1.12 ms (pipe) | GREEN (≤ 50 ms) |
+| **M7 Hardening** | 2026-11-18 | Complete release candidate pipeline (low-power idle, plugins, mock backends) | 500 | 0.28 ms (pipe) / 33.4 ms (total) | 0.45 ms (pipe) / 44.3 ms (total) | 1.18 ms (pipe) | GREEN (≤ 60 ms) |
 
 *Note: In automated replay and unit test runs without physical sensor capture, the pipeline-only software processing latency (feature extraction + filters + gestures + mapping + NullBackend) is measured. Physical optical latency is documented in HUMAN_TODO.md.*

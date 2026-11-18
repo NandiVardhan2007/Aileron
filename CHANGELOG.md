@@ -2,8 +2,16 @@
 All notable changes are documented here. Format: [Keep a Changelog](https://keepachangelog.com), versioning: SemVer.
 Changing a default threshold counts as a behavior change and must be listed.
 
-## [Unreleased]
+## [0.1.0-rc1] - 2026-11-18
 ### Added
+- **M7 Hardening & Release Candidate:**
+  - Linux `uinput` / `evdev` backend (`LinuxUInputBackend`) supporting mouse cursor, buttons, scroll, keyboard keys, and virtual gamepad axes/triggers behind lazy import.
+  - macOS Quartz CoreGraphics backend (`MacosQuartzBackend`) supporting mouse movement, click events, scroll, and key chords behind lazy import.
+  - Plugin entry point discovery (`aileron.plugins`) registering `aileron.backends` and `aileron.gestures` groups via `importlib.metadata`.
+  - Low-power camera idle mode (`CaptureThread.set_idle` & `ControlPipeline.update_power_mode`): releases webcam hardware device handle when disarmed without preview, preserving battery and privacy.
+  - PyInstaller specification (`aileron.spec`) and automated standalone build script (`tools/build_installer.py`) with asset verification.
+  - CI consistency check for rule `DOC-03` verifying 100% synchronization between `config/defaults.toml` and `docs/CONFIGURATION.md`.
+  - Finalized documentation: `README.md` quickstart, `ROADMAP.md` status, `KNOWN_ISSUES.md` hardware gaps, `HUMAN_TODO.md` checklists.
 - **M6 Handlebar & Polish:**
   - Single-hand Handlebar profile (`HandlebarProfile`) mapping wrist roll angle to steering axis ($\pm 35^\circ$), with One Euro filtering, deadzone, and expo shaping.
   - Multi-source throttle options: thumb curl, index extension, or wrist twist.

@@ -54,7 +54,7 @@ class VGamepadBackend:
             if self._is_open:
                 return
             try:
-                import vgamepad as vg  # type: ignore[import-not-found]  # noqa: PLC0415
+                import vgamepad as vg  # noqa: PLC0415
 
                 self._vg = vg
                 self._gamepad = vg.VX360Gamepad()

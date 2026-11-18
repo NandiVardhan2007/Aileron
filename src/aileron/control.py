@@ -13,6 +13,7 @@ import logging
 import time
 from dataclasses import dataclass
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from aileron.config import AileronConfig
 from aileron.features.extraction import extract_features
@@ -26,6 +27,9 @@ from aileron.safety.blackbox import BlackBoxRecorder
 from aileron.safety.gate import SafetyGate
 from aileron.safety.kill_switch import KillSwitchListener
 from aileron.safety.watchdog import CameraStallGuard, Watchdog
+
+if TYPE_CHECKING:
+    from aileron.capture import CaptureThread
 
 logger = logging.getLogger(__name__)
 
@@ -55,9 +59,11 @@ class ControlPipeline:
         gesture_engine: GestureEngine | None = None,
         blackbox: BlackBoxRecorder | None = None,
         start_watchdog: bool = False,
+        capture_thread: CaptureThread | None = None,
     ) -> None:
         self.config = config
         self.backend = backend or NullBackend()
+        self.capture_thread = capture_thread
         self.gate = safety_gate or SafetyGate(
             click_cfg=config.click,
             initial_state=SessionState.DISARMED,
@@ -106,6 +112,18 @@ class ControlPipeline:
     def attach_kill_switch(self, listener: KillSwitchListener) -> None:
         """Attach an active OS kill-switch listener."""
         self.kill_switch = listener
+
+    def update_power_mode(self, has_preview: bool = False) -> bool:
+        """Manage low-power camera idle mode based on session state and preview needs.
+
+        Returns True if capture thread is now set to idle (camera released).
+        """
+        if self.capture_thread is None:
+            return False
+
+        should_idle = self.session_manager.state == SessionState.DISARMED and not has_preview
+        self.capture_thread.set_idle(should_idle)
+        return should_idle
 
     def step(
         self,

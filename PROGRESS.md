@@ -78,16 +78,16 @@
 - [x] Task M6.7: Settings persist/load/validate cycle
 
 ### Milestone M7: Hardening & v1.0-rc1
-- [ ] Task M7.1: Linux backend (`uinput`/`evdev` mouse & gamepad) mock-tested
-- [ ] Task M7.2: macOS Pointer backend (Quartz `CGEvent`) mock-tested
-- [ ] Task M7.3: Plugin entry point loading (`aileron.backends`, `aileron.gestures`)
-- [ ] Task M7.4: Performance profiling pass against PERF budgets & latency reporting
-- [ ] Task M7.5: Low-power idle mode (release camera when disarmed and preview off)
-- [ ] Task M7.6: PyInstaller packaging specification & build script
-- [ ] Task M7.7: DOC-03 CI consistency check (`defaults.toml` vs `docs/CONFIGURATION.md`)
-- [ ] Task M7.8: Documentation finalization (`README.md`, `CHANGELOG.md`, `KNOWN_ISSUES.md`, `HUMAN_TODO.md`)
-- [ ] Task M7.9: Final quality gate run (`ruff`, `mypy --strict`, `pytest`, coverage ≥90% on gestures & safety)
-- [ ] Task M7.10: Tag `v0.1.0-rc1` and generate final Walkthrough artifact
+- [x] Task M7.1: Linux backend (`uinput`/`evdev` mouse & gamepad) mock-tested
+- [x] Task M7.2: macOS Pointer backend (Quartz `CGEvent`) mock-tested
+- [x] Task M7.3: Plugin entry point loading (`aileron.backends`, `aileron.gestures`)
+- [x] Task M7.4: Performance profiling pass against PERF budgets & latency reporting
+- [x] Task M7.5: Low-power idle mode (release camera when disarmed and preview off)
+- [x] Task M7.6: PyInstaller packaging specification & build script
+- [x] Task M7.7: DOC-03 CI consistency check (`defaults.toml` vs `docs/CONFIGURATION.md`)
+- [x] Task M7.8: Documentation finalization (`README.md`, `CHANGELOG.md`, `KNOWN_ISSUES.md`, `HUMAN_TODO.md`)
+- [x] Task M7.9: Final quality gate run (`ruff`, `mypy --strict`, `pytest`, coverage ≥90% on gestures & safety)
+- [x] Task M7.10: Tag `v0.1.0-rc1` and generate final Walkthrough artifact
 
 ---
 
@@ -109,6 +109,9 @@
 | 2026-11-18 | Native TOML serialization in profiles.py | Eliminate uninstalled external writer dependency (tomli_w) while maintaining strict TOML formatting | CONFIGURATION.md |
 | 2026-11-18 | Profile schema migrations & validation | CFG-03: Sequential migration path (v0->v1) ensuring safe backward compatibility for user profiles | CONFIGURATION.md |
 | 2026-11-18 | Dwell click and stability mode accessibility | Enable tremors/motor impairment support via motion radius window and hover-to-click FSM | PRD.md |
+| 2026-11-18 | Lazy cross-platform Linux & macOS backends | Safe execution on non-native OS with mock verification for evdev and Quartz | ARCHITECTURE.md, INTERFACES.md |
+| 2026-11-18 | Plugin entry points via importlib.metadata | Enable zero-friction community and custom backends and gestures via standard Python packaging | ARCHITECTURE.md |
+| 2026-11-18 | Low-power camera idle mode in CaptureThread | Release physical webcam handle when disarmed without preview, preserving battery and user privacy | PRIV-02, ROADMAP.md |
 
 ---
 
@@ -130,8 +133,9 @@
 | M4        | 33.7 ms                | 44.7 ms                | 8.5 ms (est)       | 6.0%         |
 | M5        | 33.7 ms                | 44.9 ms                | 8.5 ms (est)       | 6.4%         |
 | M6        | 33.3 ms                | 42.9 ms                | 8.5 ms (est)       | 6.6%         |
+| M7        | 33.4 ms                | 44.3 ms                | 8.5 ms (est)       | 6.8%         |
 
 ---
 
 ## 5. Next Action
-- Begin Milestone M7: Hardening & v1.0-rc1 (Linux/macOS mock-tested backends, plugin entry points, low-power idle mode, PyInstaller spec & build script, DOC-03 check, docs finalization, and v0.1.0-rc1 tag)
+- Project fully implemented (M0 through M7). Generate final Walkthrough artifact and tag `v0.1.0-rc1`.
