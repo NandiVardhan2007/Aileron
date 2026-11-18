@@ -1,3 +1,7 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
 [project]
 name = "aileron"
 version = "0.0.1"
@@ -11,6 +15,9 @@ dependencies = [
   "pydantic>=2.6",
   "pynput>=1.7",
 ]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/aileron"]
 
 [project.optional-dependencies]
 gamepad-windows = ["vgamepad>=0.1; sys_platform == 'win32'"]
@@ -27,10 +34,20 @@ target-version = "py311"
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "B", "UP", "N", "SIM", "PL", "RUF", "ANN"]
+ignore = ["PLR0913", "PLR0917"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["PLR2004", "ANN", "S101", "D"]
+"tools/**" = ["PLR2004", "ANN", "PLR0912", "PLR0915", "E501"]
 
 [tool.mypy]
 strict = true
 python_version = "3.11"
+plugins = ["pydantic.mypy"]
+
+[[tool.mypy.overrides]]
+module = ["mediapipe.*", "cv2.*", "pynput.*"]
+ignore_missing_imports = true
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
