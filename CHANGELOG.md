@@ -4,6 +4,14 @@ Changing a default threshold counts as a behavior change and must be listed.
 
 ## [Unreleased]
 ### Added
+- **M1 Taxi:**
+  - Scale-invariant feature extraction (`palm_size`, `anchor`, finger `curl`, `pinch` ratios, `roll_deg`, `palm_normal`).
+  - 1D and 2D One Euro adaptive low-pass filter implementations (`SIG-05`).
+  - Active-region cursor mapping supporting absolute (virtual desktop) and relative modes with gamma gain and click freeze damping.
+  - Fail-safe `HeldInputLedger` and `SafetyGate` enforcing state gating, rate limits, and desktop clamping.
+  - Windows mouse and keyboard backend (`WindowsMouseKeyboardBackend`) using native Win32 `SendInput` behind lazy import.
+  - OS-level global kill switch (`KillSwitchListener`) registering `Ctrl+Alt+Esc` on dedicated thread (`SAFE-01`).
+  - Filter tuning analysis tool `tools/tune_filters.py`.
 - **M0 Runway:**
   - MediaPipe 21-point hand landmark named constants (`Lm`) and finger chains.
   - Core data contracts: `Frame`, `Hand`, `HandFrame`, `HandFeatures`, `Signals`, `Intent` hierarchy.

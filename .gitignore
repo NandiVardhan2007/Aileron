@@ -10,5 +10,8 @@ models/*.task
 *.mp4
 *.avi
 blackbox/
+.coverage
+.coverage.*
+htmlcov/
 config/profiles/*.toml
 !config/profiles/.gitkeep

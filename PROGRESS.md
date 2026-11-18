@@ -24,14 +24,14 @@
 - [x] Task M0.14: CI workflow check & M0 test suite passing (ruff, mypy, pytest)
 
 ### Milestone M1: Taxi (Cursor & Output Foundation)
-- [ ] Task M1.1: Feature extraction `aileron/features/` (palm_size, anchor, joint curl, pinch ratios, roll, palm normal)
-- [ ] Task M1.2: One Euro filter bank `aileron/filters/one_euro.py` + `tools/tune_filters.py`
-- [ ] Task M1.3: Active-region cursor mapping `aileron/mapping/cursor.py` (absolute, relative, gamma, desktop bounds)
-- [ ] Task M1.4: Held-input ledger & SafetyGate skeleton `aileron/safety/ledger.py`, `aileron/safety/gate.py`
-- [ ] Task M1.5: Windows mouse/keyboard backend `aileron/output/windows.py` (ctypes `SendInput`, lazy import)
-- [ ] Task M1.6: OS-level kill switch `aileron/safety/kill_switch.py` (threaded `RegisterHotKey`, fallback)
-- [ ] Task M1.7: `--panic` CLI handler (inter-process signal/flag to neutralize running instance)
-- [ ] Task M1.8: Unit, property & replay tests for M1 (cursor mapping, filters, kill switch mocks)
+- [x] Task M1.1: Feature extraction `aileron/features/` (palm_size, anchor, joint curl, pinch ratios, roll, palm normal)
+- [x] Task M1.2: One Euro filter bank `aileron/filters/one_euro.py` + `tools/tune_filters.py`
+- [x] Task M1.3: Active-region cursor mapping `aileron/mapping/cursor.py` (absolute, relative, gamma, desktop bounds)
+- [x] Task M1.4: Held-input ledger & SafetyGate skeleton `aileron/safety/ledger.py`, `aileron/safety/gate.py`
+- [x] Task M1.5: Windows mouse/keyboard backend `aileron/output/windows.py` (ctypes `SendInput`, lazy import)
+- [x] Task M1.6: OS-level kill switch `aileron/safety/kill_switch.py` (threaded `RegisterHotKey`, fallback)
+- [x] Task M1.7: `--panic` CLI handler (inter-process signal/flag to neutralize running instance)
+- [x] Task M1.8: Unit, property & replay tests for M1 (cursor mapping, filters, kill switch mocks)
 
 ### Milestone M2: Takeoff (Clicks & Drags)
 - [ ] Task M2.1: Pinch state machines `aileron/gestures/pinch.py` (click, drag, double-click, right-click, middle-click)
@@ -98,6 +98,7 @@
 | 2026-11-18 | Initialized git repository on branch `main` | Workspace was untracked; required for conventional commits per milestone | None |
 | 2026-11-18 | Installed `uv` via pip | Required package runner and environment manager per stack spec | None |
 | 2026-11-18 | Early safety gate & ledger design in M0/M1 | Invariant SAFE-03/05: ensure all backends are born safe before real input wiring | ARCHITECTURE.md, SAFETY.md |
+| 2026-11-18 | Used `threading.RLock` in backends and ledgers | Prevent deadlocks when `release_all()` is dispatched inside an active `apply()` loop | SAFETY.md, ARCHITECTURE.md |
 
 ---
 
@@ -113,8 +114,9 @@
 |-----------|------------------------|------------------------|--------------------|--------------|
 | Target    | ≤ 40                   | ≤ 60                   | ≤ 12               | ≤ 25%        |
 | M0        | 33.4 ms                | 45.5 ms                | 8.5 ms (est)       | 4.2%         |
+| M1        | 33.5 ms                | 44.5 ms                | 8.5 ms (est)       | 5.1%         |
 
 ---
 
 ## 5. Next Action
-- Begin Milestone M1: Taxi (Feature extraction, One Euro filters, cursor mapping, SafetyGate ledger, Windows SendInput mock backend, kill switch)
+- Begin Milestone M2: Takeoff (Pinch FSMs: click, drag, double-click, right/middle-click, hysteresis, min pinch duration, conflict margins, click freeze damping)

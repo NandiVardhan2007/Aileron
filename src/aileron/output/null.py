@@ -29,7 +29,7 @@ class NullBackend:
     capabilities: frozenset[str] = frozenset({"mouse", "keyboard", "gamepad"})
 
     def __init__(self) -> None:
-        self._lock = threading.Lock()
+        self._lock = threading.RLock()
         self._is_open: bool = False
         self._recorded_intents: list[Intent] = []
         self._held_items: set[str] = set()
