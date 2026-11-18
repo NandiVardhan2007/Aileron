@@ -1,15 +1,29 @@
-"""CLI entry point for Aileron."""
+"""CLI entry point and runtime launcher for Aileron."""
+
+from __future__ import annotations
 
 import argparse
+import contextlib
 import json
+import logging
 import sys
 import time
 from pathlib import Path
 
-from aileron.config import load_config
+import cv2
+
+from aileron.capture import CaptureThread
+from aileron.config import AileronConfig, load_config
+from aileron.control import ControlPipeline
+from aileron.interfaces import Frame, HandFrame
+from aileron.output.base import OutputBackend
 from aileron.output.null import NullBackend
 from aileron.replay import ReplayReader
 from aileron.ui.gamepad_viewer import run_gamepad_test
+from aileron.ui.overlay import draw_skeleton
+from aileron.vision.tracker import HandTracker, ensure_model_file
+
+logger = logging.getLogger("aileron")
 
 
 def handle_panic() -> None:
@@ -46,6 +60,147 @@ def run_replay(
     fps = processed / t_elapsed if t_elapsed > 0 else 0
     print(f"Replay complete: processed {processed} frames in {t_elapsed:.3f}s ({fps:.1f} FPS).")
     backend.close()
+
+
+def _create_backend(choice: str) -> OutputBackend:
+    """Resolve requested backend safely according to host platform."""
+    backend: OutputBackend = NullBackend()
+
+    if choice in ("mouse", "windows") and sys.platform == "win32":
+        from aileron.output.windows import WindowsMouseKeyboardBackend  # noqa: PLC0415
+
+        backend = WindowsMouseKeyboardBackend()
+    elif choice in ("mouse", "linux") and sys.platform == "linux":
+        from aileron.output.linux import LinuxUInputBackend  # noqa: PLC0415
+
+        backend = LinuxUInputBackend()
+    elif choice == "gamepad":
+        from aileron.output.gamepad import KeyboardPwmGamepad, VGamepadBackend  # noqa: PLC0415
+
+        try:
+            backend = VGamepadBackend()
+        except Exception:
+            backend = KeyboardPwmGamepad()
+    elif choice == "auto":
+        if sys.platform == "win32":
+            from aileron.output.windows import WindowsMouseKeyboardBackend  # noqa: PLC0415
+
+            backend = WindowsMouseKeyboardBackend()
+        elif sys.platform == "linux":
+            from aileron.output.linux import LinuxUInputBackend  # noqa: PLC0415
+
+            backend = LinuxUInputBackend()
+
+    return backend
+
+
+def _init_vision(config: AileronConfig) -> tuple[CaptureThread, HandTracker | None]:
+    """Initialize camera capture thread and MediaPipe tracker."""
+    capture = CaptureThread(config=config.camera)
+    capture.start()
+
+    time.sleep(0.1)
+    if capture.latest_error is not None:
+        raise RuntimeError(f"Camera failed to start: {capture.latest_error}")
+
+    tracker: HandTracker | None = None
+    try:
+        model_path = ensure_model_file()
+        tracker = HandTracker(
+            config=config.tracking,
+            model_path=model_path,
+            is_mirrored=config.camera.mirror,
+        )
+    except Exception as exc:
+        print(f"[WARN] Could not initialize HandTracker ({exc}). Running headless.")
+
+    return capture, tracker
+
+
+def _render_hud(show_hud: bool, frame: Frame | None, hand_frame: HandFrame | None) -> bool:
+    """Render skeleton and status overlay; returns True if user pressed quit key."""
+    if not show_hud or frame is None or frame.image is None:
+        return False
+
+    canvas = frame.image.copy()
+    if hand_frame is not None:
+        for h in hand_frame.hands:
+            draw_skeleton(canvas, h)
+    cv2.imshow("Aileron", canvas)
+    key = cv2.waitKey(1) & 0xFF
+    return key in (27, ord("q"))
+
+
+def run_live(
+    config: AileronConfig,
+    backend_choice: str = "null",
+    show_hud: bool = True,
+    debug: bool = False,
+    max_frames: int | None = None,
+) -> None:
+    """Run live camera capture and control pipeline."""
+    backend = _create_backend(backend_choice)
+    try:
+        backend.open()
+    except Exception as e:
+        print(f"[WARN] Backend '{backend_choice}' unavailable ({e}). Falling back to NullBackend.")
+        backend = NullBackend()
+        backend.open()
+
+    print(
+        f"Aileron initialized. State: DISARMED. Backend: {backend.name}. Safety invariant: SAFE-05."
+    )
+    print("Hold open palm in front of camera for 0.4s to arm. Press Ctrl+Alt+Esc or 'q' to exit.")
+
+    try:
+        capture, tracker = _init_vision(config)
+    except Exception as err:
+        print(f"[ERROR] {err}\nEnsure webcam is connected. Use --replay for offline tests.")
+        backend.close()
+        return
+
+    pipeline = ControlPipeline(
+        config=config,
+        backend=backend,
+        capture_thread=capture,
+        start_watchdog=True,
+    )
+
+    frame_count = 0
+    try:
+        while True:
+            if max_frames is not None and frame_count >= max_frames:
+                break
+
+            frame = capture.get_latest_frame(timeout_s=0.05)
+            hand_frame = None
+
+            if frame is not None and tracker is not None:
+                tracker.process_frame(frame)
+                hand_frame = tracker.get_latest_hand_frame(timeout_s=0.01)
+
+            pipeline.step(hand_frame)
+            frame_count += 1
+
+            if _render_hud(show_hud, frame, hand_frame):
+                break
+
+            if Path(".aileron_panic").exists():
+                print("[PANIC] Panic flag detected; neutralizing and shutting down.")
+                Path(".aileron_panic").unlink(missing_ok=True)
+                break
+    except KeyboardInterrupt:
+        print("\nShutdown requested by user.")
+    finally:
+        pipeline.shutdown()
+        if tracker is not None:
+            tracker.close()
+        capture.stop()
+        backend.close()
+        if show_hud:
+            with contextlib.suppress(Exception):
+                cv2.destroyAllWindows()
+        print(f"Aileron stopped cleanly. Total ticks: {frame_count}.")
 
 
 def main() -> None:
@@ -104,17 +259,15 @@ def main() -> None:
         run_replay(args.replay, debug=args.debug, max_frames=args.headless_frames)
         sys.exit(0)
 
-    # In M0 autonomous development mode, default to NullBackend
-    backend = NullBackend()
-    backend.open()
-    print(
-        f"Aileron initialized. State: DISARMED. Backend: {backend.name}. Safety invariant: SAFE-05."
+    # Launch live control loop
+    show_hud = not args.no_hud and args.headless_frames is None
+    run_live(
+        config=cfg,
+        backend_choice=args.backend,
+        show_hud=show_hud,
+        debug=args.debug,
+        max_frames=args.headless_frames,
     )
-
-    if args.headless_frames is not None:
-        print(f"Headless smoke test completed {args.headless_frames} ticks.")
-        backend.close()
-        sys.exit(0)
 
 
 if __name__ == "__main__":
