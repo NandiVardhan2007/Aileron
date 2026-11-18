@@ -49,13 +49,13 @@
 - [x] Task M3.7: Replay fixtures and tests for scroll, zoom, clutch, resume, mode toggle
 
 ### Milestone M4: Pressurize (Complete Safety Architecture)
-- [ ] Task M4.1: Full SafetyGate pipeline (armed gating, bounds clamping, rate limits, ledger enforcement)
-- [ ] Task M4.2: Watchdog thread `aileron/safety/watchdog.py` (heartbeat monitor, auto release_all on stall)
-- [ ] Task M4.3: Camera-stall guard (hand lost trigger if no frames in 500 ms)
-- [ ] Task M4.4: Fail-closed exception handling throughout control loop
-- [ ] Task M4.5: FAULT state and user acknowledgment flow
-- [ ] Task M4.6: Opt-in black-box ring buffer `aileron/safety/blackbox.py` (landmarks only, dump on fault)
-- [ ] Task M4.7: Complete safety test suite (`pytest -m safety`, 100% pass, ≥90% coverage on safety/)
+- [x] Task M4.1: Full SafetyGate pipeline (armed gating, bounds clamping, rate limits, ledger enforcement)
+- [x] Task M4.2: Watchdog thread `aileron/safety/watchdog.py` (heartbeat monitor, auto release_all on stall)
+- [x] Task M4.3: Camera-stall guard (hand lost trigger if no frames in 500 ms)
+- [x] Task M4.4: Fail-closed exception handling throughout control loop
+- [x] Task M4.5: FAULT state and user acknowledgment flow
+- [x] Task M4.6: Opt-in black-box ring buffer `aileron/safety/blackbox.py` (landmarks only, dump on fault)
+- [x] Task M4.7: Complete safety test suite (`pytest -m safety`, 100% pass, ≥90% coverage on safety/)
 
 ### Milestone M5: Cruise (Cockpit Mode & Yoke Profile)
 - [ ] Task M5.1: Cockpit mode engine & Yoke profile `aileron/modes/cockpit.py`, `aileron/modes/yoke.py`
@@ -102,6 +102,8 @@
 | 2026-11-18 | Decomposed pinch detectors into specialized FSMs | Clean separation of concerns between left/drag/double-click, right-click, and middle-click with unified aggregation | GESTURES.md, ARCHITECTURE.md |
 | 2026-11-18 | Cumulative rotational joint mechanics in synth_landmarks | Accurate anatomical joint flexion angles preventing false finger extensions in curled poses | TESTING.md |
 | 2026-11-18 | Neutral frame injection on all mode/session transitions | SAFE-05 / SAFE-07: Guaranteed ReleaseAll intent emitted whenever transitioning away from active control | SAFETY.md, ARCHITECTURE.md |
+| 2026-11-18 | Continuous motion coalescing in SafetyGate | SAFE-07: Coalesces multi-MoveTo/Axis/Trigger per tick while strictly capping discrete events to 50 | SAFETY.md, ARCHITECTURE.md |
+| 2026-11-18 | Dedicated OS thread Watchdog & CameraStallGuard | SAFE-04: Independent watchdog monitors control loop heartbeat (250ms) and camera stall (500ms) with fail-closed release | SAFETY.md |
 
 ---
 
@@ -120,8 +122,9 @@
 | M1        | 33.5 ms                | 44.5 ms                | 8.5 ms (est)       | 5.1%         |
 | M2        | 33.6 ms                | 44.6 ms                | 8.5 ms (est)       | 5.4%         |
 | M3        | 33.7 ms                | 44.7 ms                | 8.5 ms (est)       | 5.8%         |
+| M4        | 33.7 ms                | 44.7 ms                | 8.5 ms (est)       | 6.0%         |
 
 ---
 
 ## 5. Next Action
-- Begin Milestone M4: Pressurize (Complete Safety Architecture: Watchdog, Camera-stall Guard, Black-box Ring Buffer, Fail-Closed Control Loop, Full Safety Test Suite)
+- Begin Milestone M5: Cruise (Cockpit Mode & Yoke Profile, Steering Angle, Throttle/Brake Mapping, Gamepad Interfaces & VGamepad Backend, Calibration Wizard, Axis Viewer)

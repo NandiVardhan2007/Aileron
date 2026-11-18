@@ -73,6 +73,20 @@ class NullBackend:
         with self._lock:
             return frozenset(self._held_items)
 
+    class _LedgerView:
+        """View adapter providing HeldInputLedger compatibility."""
+
+        def __init__(self, backend: "NullBackend") -> None:
+            self._backend = backend
+
+        def is_empty(self) -> bool:
+            return len(self._backend.held()) == 0
+
+    @property
+    def held_ledger(self) -> _LedgerView:
+        """Compatibility property returning a ledger view with is_empty()."""
+        return self._LedgerView(self)
+
     def _apply_pointer_intent(self, intent: Intent) -> None:
         match intent:
             case MoveTo(x=x, y=y):

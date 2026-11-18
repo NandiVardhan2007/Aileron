@@ -23,9 +23,11 @@ class ModeManager:
     """Manages active interaction mode (POINTER vs COCKPIT) and profile switches."""
 
     def __init__(
-        self, config: CockpitConfig, initial_mode: ControlMode = ControlMode.POINTER
+        self,
+        config: CockpitConfig | None = None,
+        initial_mode: ControlMode = ControlMode.POINTER,
     ) -> None:
-        self.config = config
+        self.config = config or CockpitConfig()
         self.mode: ControlMode = initial_mode
         self._last_mode_change_reason: str = "initial"
 

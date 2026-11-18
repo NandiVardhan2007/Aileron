@@ -21,6 +21,7 @@ from aileron.interfaces import (
     HandFeatures,
     HandFrame,
     Intent,
+    ReleaseAll,
     Scroll,
     Side,
     Signals,
@@ -69,14 +70,13 @@ class PrimaryHandTracker:
             if self.locked_side is not None:
                 elapsed_ms = (t_ns - self._last_seen_ns) / 1_000_000.0
                 if elapsed_ms > self.hand_lost_ms:
-                    if self._engaged:
-                        events.append(
-                            GestureEvent(
-                                kind=GestureKind.DISENGAGED,
-                                t_ns=t_ns,
-                                side=self.locked_side,
-                            )
+                    events.append(
+                        GestureEvent(
+                            kind=GestureKind.DISENGAGED,
+                            t_ns=t_ns,
+                            side=self.locked_side,
                         )
+                    )
                     self.reset()
             return None, tuple(events)
 
@@ -99,14 +99,13 @@ class PrimaryHandTracker:
             # Locked hand not in this frame; check timeout
             elapsed_ms = (t_ns - self._last_seen_ns) / 1_000_000.0
             if elapsed_ms > self.hand_lost_ms:
-                if self._engaged:
-                    events.append(
-                        GestureEvent(
-                            kind=GestureKind.DISENGAGED,
-                            t_ns=t_ns,
-                            side=self.locked_side,
-                        )
+                events.append(
+                    GestureEvent(
+                        kind=GestureKind.DISENGAGED,
+                        t_ns=t_ns,
+                        side=self.locked_side,
                     )
+                )
                 self.reset()
             else:
                 return None, tuple(events)
@@ -262,6 +261,8 @@ class GestureEngine:
             elif ev.kind == GestureKind.MODE_TOGGLE:
                 _, releases = self.mode_manager.toggle_mode()
                 out.extend(releases)
+            elif ev.kind == GestureKind.DISENGAGED:
+                out.append(ReleaseAll())
             else:
                 translated = self._translate_event_to_intent(ev)
                 if translated is not None:

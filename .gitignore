@@ -13,5 +13,6 @@ blackbox/
 .coverage
 .coverage.*
 htmlcov/
+.aileron*
 config/profiles/*.toml
 !config/profiles/.gitkeep

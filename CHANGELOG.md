@@ -4,6 +4,14 @@ Changing a default threshold counts as a behavior change and must be listed.
 
 ## [Unreleased]
 ### Added
+- **M4 Pressurize:**
+  - Independent watchdog thread (`Watchdog`) running on dedicated OS thread, monitoring heartbeat and neutralizing backends on stall > 250 ms (`SAFE-04`).
+  - Camera-stall guard (`CameraStallGuard`) monitoring frame delivery cadence and enforcing hand-lost failsafe neutralization on video stalls > 500 ms (`SAFE-04`).
+  - Fail-closed central control pipeline (`ControlPipeline`) wrapping control ticks in crash boundaries, setting `FAULT`, releasing all held inputs, and dumping blackbox diagnostics (`SAFE-08`).
+  - User FAULT acknowledgment recovery flow (`SessionStateManager.acknowledge_fault()`), preventing re-arming until safety status is explicitly acknowledged.
+  - Event flood defense and continuous motion coalescing in `SafetyGate` (`SAFE-07`), collapsing multi-move/axis events per tick and capping discrete events.
+  - In-memory circular black-box buffer (`BlackBoxRecorder`), capturing rolling landmarks and intents without pixel persistence (`PRIV-02`).
+  - Comprehensive safety test suite (`tests/safety/test_safety_full.py`) verifying all `SAFE-01` through `SAFE-08` requirements.
 - **M3 Climb:**
   - V-sign joystick scrolling detector (`ScrollDetector`) with hysteresis band, non-linear power curve displacement mapping (`x^1.5`), deadzone (0.15), lines/s rate limiting (60.0), hold dwell (120 ms), and cursor freeze damping (`SIG-06`).
   - Two-hand pinch zoom detector (`ZoomDetector`) with simultaneous pinch dwell (80 ms), normalized inter-hand distance metric $D$, 6% step fraction with baseline rebase, and zoom step emission (`SIG-09`).

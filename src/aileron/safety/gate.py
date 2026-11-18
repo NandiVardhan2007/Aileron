@@ -22,6 +22,7 @@ from aileron.safety.ledger import HeldInputLedger
 
 MAX_SCROLL_LINES_PER_TICK = 30.0
 MAX_ZOOM_STEPS_PER_TICK = 3
+MAX_INTENTS_PER_TICK = 50
 ONE_SEC_NS = 1_000_000_000
 
 
@@ -118,29 +119,66 @@ class SafetyGate:
                 self.ledger.record(intent)
                 return intent
 
+    def _coalesce_intents(
+        self, intents: Sequence[Intent]
+    ) -> tuple[MoveTo | None, dict[str, Axis], dict[str, Trigger], list[Intent]]:
+        """Split intents into latest continuous motions and discrete events per SAFE-07."""
+        latest_move: MoveTo | None = None
+        latest_axes: dict[str, Axis] = {}
+        latest_triggers: dict[str, Trigger] = {}
+        discrete_items: list[Intent] = []
+
+        for intent in intents:
+            if isinstance(intent, MoveTo):
+                latest_move = intent
+            elif isinstance(intent, Axis):
+                latest_axes[intent.name] = intent
+            elif isinstance(intent, Trigger):
+                latest_triggers[intent.name] = intent
+            elif len(discrete_items) < MAX_INTENTS_PER_TICK:
+                discrete_items.append(intent)
+
+        return latest_move, latest_axes, latest_triggers, discrete_items
+
+    def _process_discrete_items(self, items: list[Intent], now_ns: int) -> list[Intent]:
+        """Process discrete intents (ReleaseAll, clicks, scroll/zoom, buttons)."""
+        approved: list[Intent] = []
+        for intent in items:
+            if isinstance(intent, ReleaseAll):
+                approved.extend(self.ledger.drain_and_create_releases())
+            elif isinstance(intent, Click | Scroll | Zoom):
+                res = self._filter_pointer_intent(intent, now_ns)
+                if res is not None:
+                    approved.append(res)
+            else:
+                self.ledger.record(intent)
+                approved.append(intent)
+        return approved
+
     def filter(self, intents: Sequence[Intent], now_ns: int) -> list[Intent]:
-        """Filter, clamp, rate-limit, and audit candidate intents."""
+        """Filter, clamp, rate-limit, and audit candidate intents per SAFE-06/07."""
         with self._lock:
             if self._state != SessionState.ARMED:
                 if not self.ledger.is_empty():
                     return self.ledger.drain_and_create_releases()
                 return []
 
-            approved: list[Intent] = []
+            # Purge click history older than 1 second
             while self._click_times_ns and (now_ns - self._click_times_ns[0] > ONE_SEC_NS):
                 self._click_times_ns.popleft()
 
-            for intent in intents:
-                if isinstance(intent, ReleaseAll):
-                    approved.extend(self.ledger.drain_and_create_releases())
-                elif isinstance(intent, MoveTo | Click | Scroll | Zoom):
-                    res = self._filter_pointer_intent(intent, now_ns)
-                    if res is not None:
-                        approved.append(res)
-                elif isinstance(intent, Axis | Trigger):
-                    approved.append(self._filter_gamepad_intent(intent))
-                else:
-                    self.ledger.record(intent)
-                    approved.append(intent)
+            move, axes, triggers, discrete = self._coalesce_intents(intents)
+            approved = self._process_discrete_items(discrete, now_ns)
 
-            return approved
+            if move is not None:
+                res_move = self._filter_pointer_intent(move, now_ns)
+                if res_move is not None:
+                    approved.append(res_move)
+
+            for ax in axes.values():
+                approved.append(self._filter_gamepad_intent(ax))
+
+            for tr in triggers.values():
+                approved.append(self._filter_gamepad_intent(tr))
+
+            return approved[:MAX_INTENTS_PER_TICK]
