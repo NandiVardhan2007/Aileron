@@ -1,0 +1,150 @@
+# Aileron defaults. Layering: defaults.toml -> profile -> CLI flags.
+schema_version = 1
+
+[camera]
+device = 0
+width = 1280
+height = 720
+fps = 60                 # requested; actual depends on camera
+mirror = true            # mirror once at capture
+buffer_size = 1
+
+[tracking]
+num_hands = 2
+min_detection_conf = 0.6
+min_presence_conf = 0.6
+min_tracking_conf = 0.6
+min_hand_conf = 0.6
+min_palm_size = 0.05     # normalized image units
+hand_lost_ms = 150
+engage_ms = 300
+dwell_grace_ms = 100
+primary_hand = "either"  # "either" | "left" | "right"
+
+[loop]
+tick_hz = 120
+heartbeat_stale_ms = 250
+
+[filters.cursor]
+min_cutoff = 1.2
+beta = 8.0
+d_cutoff = 1.0
+
+[filters.scroll]
+min_cutoff = 1.0
+beta = 4.0
+d_cutoff = 1.0
+
+[filters.steering]
+min_cutoff = 0.9
+beta = 3.0
+d_cutoff = 1.0
+
+[filters.trigger]
+min_cutoff = 2.5
+beta = 15.0
+d_cutoff = 1.0
+
+[pointer]
+mode = "absolute"        # "absolute" | "relative"
+region_w = 0.60
+region_h = 0.50
+region_cx = 0.50
+region_cy = 0.55
+gamma = 1.0
+relative_gain = 1800.0
+accel = 0.5
+min_move_px = 1
+freeze_damping = 1.0     # 1.0 = fully frozen during pinch pending
+anchor = ["INDEX_FINGER_MCP", "MIDDLE_FINGER_MCP"]
+
+[click]
+pinch_on = 0.25
+pinch_off = 0.35
+min_pinch_ms = 40
+tap_ms = 300
+dbl_ms = 350
+margin = 0.08
+max_clicks_per_s = 8
+
+[scroll]
+deadzone = 0.15
+gain = 40.0
+power = 1.5
+max_lines_per_s = 60.0
+hold_ms = 120
+
+[zoom]
+step_fraction = 0.06
+require_both_pinch_ms = 80
+method = "ctrl_wheel"    # "ctrl_wheel" | "ctrl_plusminus"
+
+[fingers]
+theta_curled_deg = 70.0
+theta_straight_deg = 170.0
+ext_on = 0.75
+ext_off = 0.35
+
+[session]
+start_armed = false
+clutch_ms = 400
+resume_ms = 400
+arm_ms = 800
+mode_ms = 800
+kill_switch_hotkey = "ctrl+alt+esc"
+fatigue_reminder_min = 15
+
+[cockpit]
+profile = "yoke"         # "yoke" | "handlebar" | "stick"
+on_loss = "neutral"      # "neutral" | "brake"
+neutral_hold_ms = 1000
+ramp_in_ms = 200
+mode_toggle_block_throttle = 0.3
+backend = "auto"         # "auto" | "vgamepad" | "uinput" | "keyboard_pwm"
+
+[cockpit.yoke]
+steer_max_deg = 45.0
+steer_deadzone_deg = 3.0
+steer_expo = 0.35
+throttle_source = "right_index"
+brake_source = "left_index"
+trigger_deadzone = 0.05
+trigger_curve = 1.0
+
+[cockpit.handlebar]
+steer_max_deg = 35.0
+steer_deadzone_deg = 3.0
+steer_expo = 0.35
+throttle_source = "thumb_curl"   # "thumb_curl" | "wrist_twist" | "index"
+brake_source = "off_hand_index"
+
+[cockpit.buttons]
+gear_up = "right_pinch_ring"
+gear_down = "left_pinch_ring"
+handbrake = "right_pinch_pinky"
+horn = "left_pinch_pinky"
+
+[ui]
+hud = true
+hud_mode = "compact"     # "compact" | "full"
+debug_panel = false
+reduced_motion = false
+audio_cues = false
+
+[accessibility]
+stability_mode = false   # stronger smoothing, wider thresholds, longer dwell
+dwell_click = false
+dwell_click_ms = 900
+
+[logging]
+level = "INFO"
+file = true
+max_mb = 10
+
+[blackbox]
+enabled = false          # opt-in; stores landmarks only
+seconds = 10
+dump_on_fault = true
+
+[privacy]
+network = false          # must remain false; no network code in pipeline

@@ -1,0 +1,38 @@
+[project]
+name = "aileron"
+version = "0.0.1"
+description = "Touchless air-mouse and simulator controller driven by MediaPipe hand tracking."
+requires-python = ">=3.11"
+readme = "README.md"
+dependencies = [
+  "mediapipe>=0.10",
+  "opencv-python>=4.9",
+  "numpy>=1.26",
+  "pydantic>=2.6",
+  "pynput>=1.7",
+]
+
+[project.optional-dependencies]
+gamepad-windows = ["vgamepad>=0.1; sys_platform == 'win32'"]
+gamepad-linux   = ["evdev>=1.7; sys_platform == 'linux'"]
+ui              = ["PySide6>=6.6"]
+dev = ["pytest>=8", "pytest-cov", "hypothesis>=6", "ruff>=0.5", "mypy>=1.10"]
+
+[project.scripts]
+aileron = "aileron.__main__:main"
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "N", "SIM", "PL", "RUF", "ANN"]
+
+[tool.mypy]
+strict = true
+python_version = "3.11"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q --strict-markers"
+markers = ["safety: safety-critical tests that may never be skipped", "manual: needs camera or OS input"]
