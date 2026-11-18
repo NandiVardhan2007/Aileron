@@ -66,14 +66,10 @@ def _create_backend(choice: str) -> OutputBackend:
     """Resolve requested backend safely according to host platform."""
     backend: OutputBackend = NullBackend()
 
-    if choice in ("mouse", "windows") and sys.platform == "win32":
+    if choice in ("mouse", "windows", "auto") and sys.platform == "win32":
         from aileron.output.windows import WindowsMouseKeyboardBackend  # noqa: PLC0415
 
         backend = WindowsMouseKeyboardBackend()
-    elif choice in ("mouse", "linux") and sys.platform == "linux":
-        from aileron.output.linux import LinuxUInputBackend  # noqa: PLC0415
-
-        backend = LinuxUInputBackend()
     elif choice == "gamepad":
         from aileron.output.gamepad import KeyboardPwmGamepad, VGamepadBackend  # noqa: PLC0415
 
@@ -81,15 +77,6 @@ def _create_backend(choice: str) -> OutputBackend:
             backend = VGamepadBackend()
         except Exception:
             backend = KeyboardPwmGamepad()
-    elif choice == "auto":
-        if sys.platform == "win32":
-            from aileron.output.windows import WindowsMouseKeyboardBackend  # noqa: PLC0415
-
-            backend = WindowsMouseKeyboardBackend()
-        elif sys.platform == "linux":
-            from aileron.output.linux import LinuxUInputBackend  # noqa: PLC0415
-
-            backend = LinuxUInputBackend()
 
     return backend
 

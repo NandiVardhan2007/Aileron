@@ -4,15 +4,15 @@
 
 [![Release](https://img.shields.io/badge/release-v0.1.0--rc1-blue.svg?style=flat-square)](https://github.com/NandiVardhan2007/Aileron/releases)
 [![Python](https://img.shields.io/badge/python-3.11%20%7C%203.12-blue.svg?style=flat-square)](https://www.python.org/)
-[![Platforms](https://img.shields.io/badge/platforms-Windows%2010%2F11%20%7C%20Linux-brightgreen.svg?style=flat-square)](#platform-support)
+[![Platforms](https://img.shields.io/badge/platform-Windows%2010%2F11%20(64--bit)-brightgreen.svg?style=flat-square)](#platform-support)
 [![Latency](https://img.shields.io/badge/latency%20p95-%E2%89%A4%2044.3%20ms-success.svg?style=flat-square)](docs/benchmarks.md)
-[![Test Coverage](https://img.shields.io/badge/coverage-96%25-brightgreen.svg?style=flat-square)](docs/TESTING.md)
+[![Test Coverage](https://img.shields.io/badge/coverage-97%25-brightgreen.svg?style=flat-square)](docs/TESTING.md)
 [![Safety Invariants](https://img.shields.io/badge/safety-SAFE--01..08%20verified-success.svg?style=flat-square)](docs/SAFETY.md)
 [![Privacy](https://img.shields.io/badge/privacy-100%25%20local%20%7C%20zero%20telemetry-blueviolet.svg?style=flat-square)](#security--privacy)
 
 **Fly your cursor. Steer your simulator. Zero physical wear — just your hands.**
 
-*Aileron transforms any standard USB or integrated webcam into an ultra-low-latency, fail-safe touchless controller for desktop navigation and vehicle simulation on Windows and Linux.*
+*Aileron transforms any standard USB or integrated webcam into an ultra-low-latency, fail-safe touchless controller for desktop navigation and vehicle simulation on Windows 10 and 11.*
 
 [Quick Start](#quick-start) • [Modes & Controls](#operation-modes) • [Safety Architecture](#fail-safe-safety-architecture) • [Configuration](#configuration--custom-profiles) • [Documentation](#documentation-index)
 
@@ -33,7 +33,7 @@ flowchart LR
     C --> D["Feature Extraction\n(Anchor, Curl, Roll, Pinch)"]
     D --> E["Gesture & Cockpit Engine\n(One Euro Filters & FSMs)"]
     E --> F["Safety Gate\n(Ledger, Clamps, Coalescing)"]
-    F --> G["Platform Output\n(Windows / Linux / Virtual Gamepad)"]
+    F --> G["Platform Output\n(Windows SendInput / Virtual Gamepad)"]
     
     WD["Independent Watchdog\n(250 ms OS Thread)"] -.->|Heartbeat / Stall Release| F
     CG["Camera Stall Guard\n(500 ms Delivery Check)"] -.->|Frame Stall Release| F
@@ -57,13 +57,15 @@ flowchart LR
 
 ## Platform Support
 
-Aileron is engineered and optimized for **Windows 10/11** and **Linux**:
+Aileron is engineered and optimized exclusively for **Windows 10 and Windows 11 (64-bit)**:
 
-| Platform | Pointer / Mouse / Keyboard | Virtual Gamepad Simulation | Global Kill Switch |
-|---|---|---|---|
-| **Windows 10/11 (64-bit)** | Native Win32 `SendInput` via ctypes | Native Xbox 360 emulation via ViGEmBus (`vgamepad`) | Win32 `RegisterHotKey` (`Ctrl+Alt+Esc`) |
-| **Linux (Ubuntu, Debian, Fedora, Arch)** | Kernel `uinput` (`evdev`) user-space device | Kernel `uinput` virtual gamepad device | Native POSIX signal / panic handler |
-| **Universal Fallback** | `NullBackend` (Telemetry / HUD only) | `KeyboardPwmGamepad` (High-frequency PWM keyboard mapping) | CLI `--panic` broadcast signal |
+| Component | Technology | Description |
+|---|---|---|
+| **Pointer Mode** | Native Win32 `SendInput` (ctypes) | High-speed mouse motion, clicks, drags, scroll, and zoom. |
+| **Cockpit Mode** | ViGEmBus Virtual Xbox 360 Gamepad | True analog steering, throttle, and brake emulation for racing/flight sims. |
+| **Keyboard Fallback** | `KeyboardPwmGamepad` | Software PWM keyboard emulation if virtual gamepad driver is not installed. |
+| **Global Emergency Stop** | Win32 `RegisterHotKey` | OS-level global kill switch bound to `Ctrl+Alt+Esc`. |
+| **Safe Dry-Run** | `NullBackend` | Full telemetry and HUD overlay with zero OS input injection. |
 
 ---
 
@@ -71,32 +73,32 @@ Aileron is engineered and optimized for **Windows 10/11** and **Linux**:
 
 ### 1. Prerequisites
 
+- **Operating System:** Windows 10 or Windows 11 (64-bit).
 - **Python:** Version 3.11 or 3.12 (64-bit).
 - **Webcam:** 720p @ 30 FPS minimum (720p @ 60 FPS recommended for lowest latency).
-- **Package Runner:** [uv](https://astral.sh/uv) (recommended) or standard `pip`.
+- **Package Runner:** [uv](https://astral.sh/uv) (recommended) or standard Python `pip`.
 
 ### 2. Installation
 
 Clone the repository and synchronize dependencies:
 
-```bash
+```cmd
 git clone https://github.com/NandiVardhan2007/Aileron.git
 cd Aileron
 
-# Using uv (fastest)
+:: Using uv (recommended)
 uv sync
 
-# Or using standard python venv
+:: Or using standard python venv
 python -m venv .venv
-source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+.venv\Scripts\activate
 pip install -e .
 ```
 
 ### 3. Running Aileron
 
-Turnkey launcher scripts are provided in the repository root:
+Turnkey launcher scripts are provided:
 
-#### Windows
 ```cmd
 :: 1. Safe dry-run with live HUD overlay (zero OS input injection)
 run.bat
@@ -106,17 +108,6 @@ uv run aileron --gamepad-test
 
 :: 3. Arm live control (starts DISARMED; show open palm for 0.4s to arm)
 run.bat --live
-```
-
-#### Linux
-Ensure your user has access to `/dev/uinput` for hardware emulation:
-```bash
-# Add uinput udev rule (one-time setup)
-echo 'KERNEL=="uinput", MODE="0660", GROUP="input"' | sudo tee /etc/udev/rules.d/99-uinput.rules
-sudo usermod -aG input $USER
-# Log out and log back in, then launch:
-chmod +x run.sh
-./run.sh
 ```
 
 ---

@@ -107,7 +107,8 @@ class WindowsMouseKeyboardBackend:
         if user32_mock is not None:
             self._user32 = user32_mock
         elif sys.platform == "win32":
-            self._user32 = ctypes.windll.user32
+            win_dll = getattr(ctypes, "windll", None)
+            self._user32 = getattr(win_dll, "user32", None) if win_dll is not None else None
         else:
             self._user32 = None
 

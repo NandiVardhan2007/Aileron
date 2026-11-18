@@ -14,7 +14,6 @@ from typing import TYPE_CHECKING
 
 from aileron.output.base import OutputBackend
 from aileron.output.gamepad import KeyboardPwmGamepad, VGamepadBackend
-from aileron.output.linux import LinuxUInputBackend
 from aileron.output.null import NullBackend
 from aileron.output.windows import WindowsMouseKeyboardBackend
 
@@ -23,11 +22,10 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 
-# Built-in backends provided by core Aileron package (Windows and Linux)
+# Built-in backends provided by core Aileron package (Windows)
 BUILTIN_BACKENDS: dict[str, type[OutputBackend]] = {
     "null": NullBackend,
     "windows": WindowsMouseKeyboardBackend,
-    "linux": LinuxUInputBackend,
     "vgamepad": VGamepadBackend,
     "keyboard_pwm": KeyboardPwmGamepad,
 }

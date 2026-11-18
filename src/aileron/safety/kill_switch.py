@@ -27,10 +27,15 @@ class KillSwitchListener:
         self._thread: threading.Thread | None = None
         self._running: bool = False
         self._lock = threading.Lock()
+        win_dll = getattr(ctypes, "windll", None)
         self._user32 = (
             user32_mock
             if user32_mock is not None
-            else (ctypes.windll.user32 if sys.platform == "win32" else None)
+            else (
+                getattr(win_dll, "user32", None)
+                if win_dll is not None and sys.platform == "win32"
+                else None
+            )
         )
         self._thread_id: int | None = None
 
@@ -68,7 +73,8 @@ class KillSwitchListener:
                 threading.Event().wait(0.5)
             return
 
-        kernel32 = ctypes.windll.kernel32 if hasattr(ctypes, "windll") else None
+        win_dll = getattr(ctypes, "windll", None)
+        kernel32 = getattr(win_dll, "kernel32", None) if win_dll is not None else None
         if kernel32:
             with self._lock:
                 self._thread_id = kernel32.GetCurrentThreadId()

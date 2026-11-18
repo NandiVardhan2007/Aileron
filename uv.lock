@@ -37,9 +37,6 @@ dev = [
     { name = "pytest-cov" },
     { name = "ruff" },
 ]
-gamepad-linux = [
-    { name = "evdev", marker = "sys_platform == 'linux'" },
-]
 gamepad-windows = [
     { name = "vgamepad", marker = "sys_platform == 'win32'" },
 ]
@@ -49,7 +46,6 @@ ui = [
 
 [package.metadata]
 requires-dist = [
-    { name = "evdev", marker = "sys_platform == 'linux' and extra == 'gamepad-linux'", specifier = ">=1.7" },
     { name = "hypothesis", marker = "extra == 'dev'", specifier = ">=6" },
     { name = "mediapipe", specifier = ">=0.10" },
     { name = "mypy", marker = "extra == 'dev'", specifier = ">=1.10" },
@@ -63,7 +59,7 @@ requires-dist = [
     { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.5" },
     { name = "vgamepad", marker = "sys_platform == 'win32' and extra == 'gamepad-windows'", specifier = ">=0.1" },
 ]
-provides-extras = ["gamepad-windows", "gamepad-linux", "ui", "dev"]
+provides-extras = ["gamepad-windows", "ui", "dev"]
 
 [[package]]
 name = "annotated-types"

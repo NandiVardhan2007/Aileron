@@ -21,7 +21,6 @@ packages = ["src/aileron"]
 
 [project.optional-dependencies]
 gamepad-windows = ["vgamepad>=0.1; sys_platform == 'win32'"]
-gamepad-linux   = ["evdev>=1.7; sys_platform == 'linux'"]
 ui              = ["PySide6>=6.6"]
 dev = ["pytest>=8", "pytest-cov", "hypothesis>=6", "ruff>=0.5", "mypy>=1.10"]
 
@@ -31,7 +30,6 @@ aileron = "aileron.__main__:main"
 [project.entry-points."aileron.backends"]
 null = "aileron.output.null:NullBackend"
 windows = "aileron.output.windows:WindowsMouseKeyboardBackend"
-linux = "aileron.output.linux:LinuxUInputBackend"
 vgamepad = "aileron.output.gamepad:VGamepadBackend"
 keyboard_pwm = "aileron.output.gamepad:KeyboardPwmGamepad"
 
@@ -56,7 +54,7 @@ python_version = "3.11"
 plugins = ["pydantic.mypy"]
 
 [[tool.mypy.overrides]]
-module = ["mediapipe.*", "cv2.*", "pynput.*", "evdev.*", "evdev", "vgamepad.*", "vgamepad"]
+module = ["mediapipe.*", "cv2.*", "pynput.*", "vgamepad.*", "vgamepad"]
 ignore_missing_imports = true
 
 [tool.pytest.ini_options]

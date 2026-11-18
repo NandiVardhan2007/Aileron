@@ -58,6 +58,7 @@ class HandTracker:
         self._latest_hand_frame: HandFrame | None = None
         self._pending_frames: dict[int, Frame] = {}
         self._landmarker: HandLandmarker | None = None
+        self._last_timestamp_ms: int = -1
 
         if auto_download:
             resolved_path = ensure_model_file(model_path)
@@ -129,9 +130,14 @@ class HandTracker:
 
         rgb = cv2.cvtColor(frame.image, cv2.COLOR_BGR2RGB)
         mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=rgb)
-        timestamp_ms = int(frame.t_capture_ns // 1_000_000)
 
         with self._lock:
+            ts_ms = int(frame.t_capture_ns // 1_000_000)
+            if ts_ms <= self._last_timestamp_ms:
+                ts_ms = self._last_timestamp_ms + 1
+            self._last_timestamp_ms = ts_ms
+            timestamp_ms = ts_ms
+
             # Prevent map from unbounded growth if callbacks stall
             if len(self._pending_frames) > MAX_PENDING_INFERENCES:
                 self._pending_frames.clear()

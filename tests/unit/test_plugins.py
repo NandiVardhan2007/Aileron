@@ -12,7 +12,7 @@ from aileron.plugins import (
 def test_load_builtin_backend_plugins() -> None:
     """Built-in backends are registered and discoverable."""
     backends = load_backend_plugins()
-    for name in ("null", "windows", "linux", "vgamepad", "keyboard_pwm"):
+    for name in ("null", "windows", "vgamepad", "keyboard_pwm"):
         assert name in backends
         assert backends[name] == BUILTIN_BACKENDS[name]
 
