@@ -84,16 +84,58 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     if args.synthetic:
-        # Simulate realistic software pipeline delays (features + filters + mapping + null backend)
+        # Simulate realistic software pipeline delays
         import random
 
         simulated_latencies = []
         t_start = time.monotonic()
         for _ in range(args.samples):
-            # Synthetic distribution around 35ms (p50) with occasional jitter up to 55ms
             lat_ns = int((30.0 + random.expovariate(0.2)) * 1_000_000)
             simulated_latencies.append(lat_ns)
         t_dur = time.monotonic() - t_start
 
         rep = analyze_latencies(simulated_latencies, max(0.01, t_dur))
         print(format_benchmark_table(rep, "Synthetic Latency Benchmark"))
+    else:
+        # Benchmark real software pipeline processing time on replay fixtures
+        from pathlib import Path
+
+        from aileron.config import load_config
+        from aileron.features.extraction import extract_features
+        from aileron.gestures.engine import GestureEngine
+        from aileron.interfaces import SessionState
+        from aileron.output.null import NullBackend
+        from aileron.replay import ReplayReader
+        from aileron.safety.gate import SafetyGate
+
+        config = load_config()
+        engine = GestureEngine(config)
+        gate = SafetyGate(initial_state=SessionState.ARMED)
+        backend = NullBackend()
+        backend.open()
+
+        fixture_path = Path("tests/replay/pinch_click.jsonl")
+        if not fixture_path.is_file():
+            fixture_path = Path("tests/replay/move_fast.jsonl")
+
+        reader = ReplayReader(fixture_path)
+        frames, _ = reader.load_all()
+
+        latencies_ns: list[int] = []
+        t_start = time.monotonic()
+
+        for _ in range(max(1, args.samples // max(1, len(frames)))):
+            for frame in frames:
+                t0 = time.perf_counter_ns()
+                feats = [extract_features(h, config.tracking, config.fingers) for h in frame.hands]
+                output, intents = engine.process(frame, feats)
+                filtered = gate.filter(intents, now_ns=frame.t_capture_ns)
+                backend.apply(filtered)
+                t1 = time.perf_counter_ns()
+                latencies_ns.append(t1 - t0)
+
+        t_dur = time.monotonic() - t_start
+        backend.close()
+
+        rep = analyze_latencies(latencies_ns, max(0.001, t_dur))
+        print(format_benchmark_table(rep, "Active Software Pipeline Benchmark (M2)"))

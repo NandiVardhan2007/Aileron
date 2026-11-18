@@ -1,5 +1,7 @@
 """Safety-critical tests for M1 (SAFE-01..08), marked @pytest.mark.safety."""
 
+import threading
+from typing import Any
 from unittest.mock import MagicMock
 
 import pytest
@@ -27,6 +29,8 @@ from aileron.mapping.cursor import DesktopBounds
 from aileron.output.windows import WindowsMouseKeyboardBackend
 from aileron.safety.gate import SafetyGate
 from aileron.safety.kill_switch import (
+    HOTKEY_ID,
+    WM_HOTKEY,
     KillSwitchListener,
 )
 from aileron.safety.ledger import HeldInputLedger
@@ -233,3 +237,45 @@ def test_kill_switch_mock_lifecycle() -> None:
     assert len(called) == 1
     assert user32_mock.RegisterHotKey.called
     assert user32_mock.UnregisterHotKey.called
+
+
+@pytest.mark.safety
+def test_kill_switch_hotkey_message_dispatch() -> None:
+    """Verify WM_HOTKEY message triggers on_kill and loop exits on PostThreadMessage."""
+    called = []
+    processed = threading.Event()
+    user32_mock = MagicMock()
+    call_count = 0
+
+    def mock_get_message(msg_ptr: Any, hwnd: Any, min_m: Any, max_m: Any) -> int:
+        nonlocal call_count
+        call_count += 1
+        if call_count == 1:
+            msg = getattr(msg_ptr, "_obj", msg_ptr)
+            msg.message = WM_HOTKEY
+            msg.wParam = HOTKEY_ID
+            return 1
+        return 0
+
+    user32_mock.GetMessageW.side_effect = mock_get_message
+
+    def on_kill_cb() -> None:
+        called.append(True)
+        processed.set()
+
+    listener = KillSwitchListener(on_kill=on_kill_cb, user32_mock=user32_mock)
+    listener.start()
+    processed.wait(timeout=1.0)
+    listener.stop()
+
+    assert len(called) == 1
+
+
+@pytest.mark.safety
+def test_kill_switch_fallback_without_user32() -> None:
+    """Verify fallback loop when user32 is not present."""
+    listener = KillSwitchListener(on_kill=lambda: None, user32_mock=None)
+    # user32_mock is explicitly None
+    listener.start()
+    assert listener._thread is not None
+    listener.stop()

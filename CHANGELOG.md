@@ -4,6 +4,16 @@ Changing a default threshold counts as a behavior change and must be listed.
 
 ## [Unreleased]
 ### Added
+- **M2 Takeoff:**
+  - Pinch finite state machines (`PinchLeftDetector`, `PinchRightDetector`, `PinchMiddleDetector`, `PinchGestureDetector`).
+  - Left click, double click (`dbl_ms`), and drag (`tap_ms`) detection with noise spike rejection (`min_pinch_ms`).
+  - Hysteresis band enforcement (`pinch_on` < `pinch_off`) preventing boundary oscillation (`TEST-01`).
+  - Conflict margin separation (`margin >= 0.08`) distinguishing thumb-index from thumb-middle/ring pinches.
+  - Fail-safe release of drag on hand loss (`SAFE-02`).
+  - Dynamic click freeze signaling damping cursor drift during pending pinches (`SIG-06`).
+  - Rate limiting cap on click event emission (`max_clicks_per_s`).
+  - Top-level `GestureEngine` coordinating primary-hand tracking (`SIG-11`) with sticky lock, hand-lost timeouts, discrete detectors, and intent translation.
+  - Replay test suite verifying synthesized landmark fixtures for clicks, drags, double clicks, and right clicks.
 - **M1 Taxi:**
   - Scale-invariant feature extraction (`palm_size`, `anchor`, finger `curl`, `pinch` ratios, `roll_deg`, `palm_normal`).
   - 1D and 2D One Euro adaptive low-pass filter implementations (`SIG-05`).

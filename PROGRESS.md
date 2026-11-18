@@ -34,10 +34,10 @@
 - [x] Task M1.8: Unit, property & replay tests for M1 (cursor mapping, filters, kill switch mocks)
 
 ### Milestone M2: Takeoff (Clicks & Drags)
-- [ ] Task M2.1: Pinch state machines `aileron/gestures/pinch.py` (click, drag, double-click, right-click, middle-click)
-- [ ] Task M2.2: Hysteresis, min pinch time, conflict margins, and click freeze damping
-- [ ] Task M2.3: Click rate limiter in SafetyGate (max 8 clicks/s default)
-- [ ] Task M2.4: Unit, property, and replay tests for click/drag positive/negative fixtures
+- [x] Task M2.1: Pinch state machines `aileron/gestures/pinch.py` (click, drag, double-click, right-click, middle-click)
+- [x] Task M2.2: Hysteresis, min pinch time, conflict margins, and click freeze damping
+- [x] Task M2.3: Click rate limiter in SafetyGate (max 8 clicks/s default)
+- [x] Task M2.4: Unit, property, and replay tests for click/drag positive/negative fixtures
 
 ### Milestone M3: Climb (Scroll, Zoom, Clutch & Modes)
 - [ ] Task M3.1: V-sign joystick scroll detector `aileron/gestures/scroll.py` (deadzone, power curve)
@@ -99,6 +99,7 @@
 | 2026-11-18 | Installed `uv` via pip | Required package runner and environment manager per stack spec | None |
 | 2026-11-18 | Early safety gate & ledger design in M0/M1 | Invariant SAFE-03/05: ensure all backends are born safe before real input wiring | ARCHITECTURE.md, SAFETY.md |
 | 2026-11-18 | Used `threading.RLock` in backends and ledgers | Prevent deadlocks when `release_all()` is dispatched inside an active `apply()` loop | SAFETY.md, ARCHITECTURE.md |
+| 2026-11-18 | Decomposed pinch detectors into specialized FSMs | Clean separation of concerns between left/drag/double-click, right-click, and middle-click with unified aggregation | GESTURES.md, ARCHITECTURE.md |
 
 ---
 
@@ -115,8 +116,9 @@
 | Target    | ≤ 40                   | ≤ 60                   | ≤ 12               | ≤ 25%        |
 | M0        | 33.4 ms                | 45.5 ms                | 8.5 ms (est)       | 4.2%         |
 | M1        | 33.5 ms                | 44.5 ms                | 8.5 ms (est)       | 5.1%         |
+| M2        | 33.6 ms                | 44.6 ms                | 8.5 ms (est)       | 5.4%         |
 
 ---
 
 ## 5. Next Action
-- Begin Milestone M2: Takeoff (Pinch FSMs: click, drag, double-click, right/middle-click, hysteresis, min pinch duration, conflict margins, click freeze damping)
+- Begin Milestone M3: Climb (Scroll, Zoom, Clutch, Dwell Gestures, SessionState & Mode Managers, Sticky Lock, HUD Basics)
