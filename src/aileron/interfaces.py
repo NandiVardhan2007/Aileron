@@ -82,6 +82,7 @@ class HandFeatures:
     roll_deg: float  # wrist -> middle_mcp angle vs vertical (world)
     palm_normal: np.ndarray  # (3,) unit vector
     palm_center: tuple[float, float]  # center of palm in image coordinates
+    v_gap: float = 0.0  # normalized index-middle fingertip separation
 
 
 class GestureKind(Enum):

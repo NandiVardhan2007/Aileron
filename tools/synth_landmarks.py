@@ -78,19 +78,27 @@ def generate_hand_landmarks(
     # Articulate finger flexion depending on pose
     def curl_finger(mcp: int, pip: int, dip: int, tip: int, amount: float) -> None:
         # Amount: 0.0 = straight, 1.0 = curled into palm
-        mcp_pt = pts[mcp].copy()
-        for idx, dist in [(pip, 0.04), (dip, 0.07), (tip, 0.09)]:
-            # Rotate down towards palm center (0, 0.05, 0.03)
-            curl_angle = amount * 1.57  # up to 90 degrees curl
-            pts[idx, 1] = mcp_pt[1] + dist * math.cos(curl_angle) * (1.0 - 0.5 * amount)
-            pts[idx, 2] = mcp_pt[2] + dist * math.sin(curl_angle)
-            pts[idx, 0] = mcp_pt[0] * (1.0 - 0.2 * amount)
+        ang1 = amount * math.radians(50)
+        ang2 = ang1 + amount * math.radians(90)
+        ang3 = ang2 + amount * math.radians(90)
+        l_pip = float(np.linalg.norm(pts[pip] - pts[mcp]))
+        l_dip = float(np.linalg.norm(pts[dip] - pts[pip]))
+        l_tip = float(np.linalg.norm(pts[tip] - pts[dip]))
+        pts[pip] = pts[mcp] + np.array(
+            [0, l_pip * math.cos(ang1), l_pip * math.sin(ang1)], dtype=np.float32
+        )
+        pts[dip] = pts[pip] + np.array(
+            [0, l_dip * math.cos(ang2), l_dip * math.sin(ang2)], dtype=np.float32
+        )
+        pts[tip] = pts[dip] + np.array(
+            [0, l_tip * math.cos(ang3), l_tip * math.sin(ang3)], dtype=np.float32
+        )
 
     def curl_thumb(amount: float) -> None:
         # Curl thumb towards index MCP
         target = pts[Lm.INDEX_FINGER_MCP]
-        for idx in [Lm.THUMB_MCP, Lm.THUMB_IP, Lm.THUMB_TIP]:
-            pts[idx] = pts[idx] * (1.0 - 0.5 * amount) + target * (0.5 * amount)
+        pts[Lm.THUMB_IP] = pts[Lm.THUMB_IP] * (1.0 - 0.7 * amount) + target * (0.7 * amount)
+        pts[Lm.THUMB_TIP] = pts[Lm.THUMB_TIP] * (1.0 - 0.9 * amount) + target * (0.9 * amount)
 
     if pose == "open_palm":
         pass  # already straight

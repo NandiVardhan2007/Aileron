@@ -94,8 +94,11 @@ def draw_hud(
     hand_frame: HandFrame | None = None,
     fps: float | None = None,
     latency_ms: float | None = None,
+    dwell_progress: dict[str, float] | None = None,
+    cursor_anchor: tuple[float, float] | None = None,
+    is_frozen: bool = False,
 ) -> np.ndarray:
-    """Render HUD chips, state banners, skeleton overlay, and telemetry."""
+    """Render HUD chips, state banners, skeleton overlay, telemetry, dwell, and cursor halo."""
     out = canvas.copy()
     h, w = out.shape[:2]
 
@@ -116,6 +119,15 @@ def draw_hud(
             1,
             cv2.LINE_AA,
         )
+
+    # Draw Cursor Halo and Reticle
+    if cursor_anchor is not None:
+        cx = int(np.clip(cursor_anchor[0] * w, 0, w - 1))
+        cy = int(np.clip(cursor_anchor[1] * h, 0, h - 1))
+        halo_radius = 12 if is_frozen else 18
+        halo_color = COLOR_AMBER if is_frozen else COLOR_CYAN
+        cv2.circle(out, (cx, cy), halo_radius, halo_color, 2, cv2.LINE_AA)
+        cv2.circle(out, (cx, cy), 3, COLOR_WHITE, -1, cv2.LINE_AA)
 
     # Top-left HUD badge: Session State Chip
     state_color = STATE_COLORS.get(session_state, COLOR_GREY)
@@ -145,6 +157,28 @@ def draw_hud(
         1,
         cv2.LINE_AA,
     )
+
+    # Dwell Progress Arc / Indicators
+    if dwell_progress:
+        y_dwell = 75
+        for name, prog in dwell_progress.items():
+            if prog > 0.0:
+                bar_w = 120
+                filled_w = int(bar_w * np.clip(prog, 0.0, 1.0))
+                cv2.rectangle(out, (15, y_dwell), (15 + bar_w, y_dwell + 14), COLOR_BG_BOX, -1)
+                cv2.rectangle(out, (15, y_dwell), (15 + filled_w, y_dwell + 14), COLOR_CYAN, -1)
+                cv2.rectangle(out, (15, y_dwell), (15 + bar_w, y_dwell + 14), COLOR_WHITE, 1)
+                cv2.putText(
+                    out,
+                    f"{name.upper()} {int(prog * 100)}%",
+                    (15 + bar_w + 10, y_dwell + 11),
+                    cv2.FONT_HERSHEY_SIMPLEX,
+                    0.4,
+                    COLOR_WHITE,
+                    1,
+                    cv2.LINE_AA,
+                )
+                y_dwell += 22
 
     # Telemetry metrics (Top Right)
     telem_parts = []

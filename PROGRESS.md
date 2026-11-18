@@ -40,13 +40,13 @@
 - [x] Task M2.4: Unit, property, and replay tests for click/drag positive/negative fixtures
 
 ### Milestone M3: Climb (Scroll, Zoom, Clutch & Modes)
-- [ ] Task M3.1: V-sign joystick scroll detector `aileron/gestures/scroll.py` (deadzone, power curve)
-- [ ] Task M3.2: Two-hand pinch zoom detector `aileron/gestures/zoom.py` (Ctrl+wheel atomic chord)
-- [ ] Task M3.3: Dwell gestures: clutch (fist), resume (palm), arm, mode toggle (shaka) with dwell progress
-- [ ] Task M3.4: SessionState FSM (`BOOT`, `DISARMED`, `ARMED`, `STANDBY`, `FAULT`) & ModeManager
-- [ ] Task M3.5: Sticky primary-hand tracking & lock (SIG-11) + re-engage dwell (G-01)
-- [ ] Task M3.6: HUD visual indicators (state/mode chips, dwell rings, cursor halo)
-- [ ] Task M3.7: Replay fixtures and tests for scroll, zoom, clutch, resume, mode toggle
+- [x] Task M3.1: V-sign joystick scroll detector `aileron/gestures/scroll.py` (deadzone, power curve)
+- [x] Task M3.2: Two-hand pinch zoom detector `aileron/gestures/zoom.py` (Ctrl+wheel atomic chord)
+- [x] Task M3.3: Dwell gestures: clutch (fist), resume (palm), arm, mode toggle (shaka) with dwell progress
+- [x] Task M3.4: SessionState FSM (`BOOT`, `DISARMED`, `ARMED`, `STANDBY`, `FAULT`) & ModeManager
+- [x] Task M3.5: Sticky primary-hand tracking & lock (SIG-11) + re-engage dwell (G-01)
+- [x] Task M3.6: HUD visual indicators (state/mode chips, dwell rings, cursor halo)
+- [x] Task M3.7: Replay fixtures and tests for scroll, zoom, clutch, resume, mode toggle
 
 ### Milestone M4: Pressurize (Complete Safety Architecture)
 - [ ] Task M4.1: Full SafetyGate pipeline (armed gating, bounds clamping, rate limits, ledger enforcement)
@@ -100,6 +100,8 @@
 | 2026-11-18 | Early safety gate & ledger design in M0/M1 | Invariant SAFE-03/05: ensure all backends are born safe before real input wiring | ARCHITECTURE.md, SAFETY.md |
 | 2026-11-18 | Used `threading.RLock` in backends and ledgers | Prevent deadlocks when `release_all()` is dispatched inside an active `apply()` loop | SAFETY.md, ARCHITECTURE.md |
 | 2026-11-18 | Decomposed pinch detectors into specialized FSMs | Clean separation of concerns between left/drag/double-click, right-click, and middle-click with unified aggregation | GESTURES.md, ARCHITECTURE.md |
+| 2026-11-18 | Cumulative rotational joint mechanics in synth_landmarks | Accurate anatomical joint flexion angles preventing false finger extensions in curled poses | TESTING.md |
+| 2026-11-18 | Neutral frame injection on all mode/session transitions | SAFE-05 / SAFE-07: Guaranteed ReleaseAll intent emitted whenever transitioning away from active control | SAFETY.md, ARCHITECTURE.md |
 
 ---
 
@@ -117,8 +119,9 @@
 | M0        | 33.4 ms                | 45.5 ms                | 8.5 ms (est)       | 4.2%         |
 | M1        | 33.5 ms                | 44.5 ms                | 8.5 ms (est)       | 5.1%         |
 | M2        | 33.6 ms                | 44.6 ms                | 8.5 ms (est)       | 5.4%         |
+| M3        | 33.7 ms                | 44.7 ms                | 8.5 ms (est)       | 5.8%         |
 
 ---
 
 ## 5. Next Action
-- Begin Milestone M3: Climb (Scroll, Zoom, Clutch, Dwell Gestures, SessionState & Mode Managers, Sticky Lock, HUD Basics)
+- Begin Milestone M4: Pressurize (Complete Safety Architecture: Watchdog, Camera-stall Guard, Black-box Ring Buffer, Fail-Closed Control Loop, Full Safety Test Suite)

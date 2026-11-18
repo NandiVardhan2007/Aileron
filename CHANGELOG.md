@@ -4,6 +4,14 @@ Changing a default threshold counts as a behavior change and must be listed.
 
 ## [Unreleased]
 ### Added
+- **M3 Climb:**
+  - V-sign joystick scrolling detector (`ScrollDetector`) with hysteresis band, non-linear power curve displacement mapping (`x^1.5`), deadzone (0.15), lines/s rate limiting (60.0), hold dwell (120 ms), and cursor freeze damping (`SIG-06`).
+  - Two-hand pinch zoom detector (`ZoomDetector`) with simultaneous pinch dwell (80 ms), normalized inter-hand distance metric $D$, 6% step fraction with baseline rebase, and zoom step emission (`SIG-09`).
+  - Dwell gesture detector (`DwellGestureDetector`) with grace period tolerance (100 ms) for fist clutch (400 ms), palm resume/arm (400/800 ms), and shaka mode toggle (800 ms) with progress telemetry for HUD rings (`SIG-12`).
+  - Session state manager (`SessionStateManager`) orchestrating states (`BOOT`, `DISARMED`, `ARMED`, `STANDBY`, `FAULT`) with safety gate synchronization and invariant `ReleaseAll()` emission on non-ARMED transitions (`SAFE-05`).
+  - Mode manager (`ModeManager`) managing transitions between `POINTER` and `COCKPIT` modes with neutral frame safety guarantees and high-throttle safety locks (`SAFE-07`).
+  - OpenCV HUD overlay enhancements: dwell progress indicators, cursor reticle, halo ring, and freeze state indicator.
+  - Replay test suite for scroll V-sign, zoom two-hand, and clutch/resume sequences.
 - **M2 Takeoff:**
   - Pinch finite state machines (`PinchLeftDetector`, `PinchRightDetector`, `PinchMiddleDetector`, `PinchGestureDetector`).
   - Left click, double click (`dbl_ms`), and drag (`tap_ms`) detection with noise spike rejection (`min_pinch_ms`).

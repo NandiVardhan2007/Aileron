@@ -270,6 +270,12 @@ def extract_features(
     is_right = hand.side.value == "right"
     normal = compute_palm_normal(hand.world, is_right)
 
+    # V-sign gap: distance between index tip and middle tip normalized by palm size
+    d_v_tips = float(
+        np.linalg.norm(hand.world[int(Lm.INDEX_FINGER_TIP)] - hand.world[int(Lm.MIDDLE_FINGER_TIP)])
+    )
+    v_gap = float(d_v_tips / max(1e-4, palm_size_world))
+
     return HandFeatures(
         side=hand.side,
         valid=True,
@@ -280,4 +286,5 @@ def extract_features(
         roll_deg=roll,
         palm_normal=normal,
         palm_center=(center_x, center_y),
+        v_gap=v_gap,
     )

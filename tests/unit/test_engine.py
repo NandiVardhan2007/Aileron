@@ -61,34 +61,35 @@ def _make_feat(
 
 def test_primary_hand_tracker_sticky_and_timeout() -> None:
     """PrimaryHandTracker locks to first engaged hand and unlocks on timeout."""
-    tracker = PrimaryHandTracker(hand_lost_ms=150)
+    tracker = PrimaryHandTracker(hand_lost_ms=150, engage_ms=300)
     assert tracker.locked_side is None
 
     # Empty frame
-    assert tracker.select((), t_ns=0) is None
+    h, _evs = tracker.select((), t_ns=0)
+    assert h is None
 
     # Two hands appear: Left (palm=0.12) and Right (palm=0.18)
     h_left = _make_feat(Side.LEFT, palm_size=0.12)
     h_right = _make_feat(Side.RIGHT, palm_size=0.18)
 
-    selected = tracker.select((h_left, h_right), t_ns=100_000_000)
+    selected, _evs = tracker.select((h_left, h_right), t_ns=100_000_000)
     assert selected is not None
     assert selected.side == Side.RIGHT
     assert tracker.locked_side == Side.RIGHT
 
     # Next frame: Left palm grows larger (0.22), but Right is still locked!
     h_left_larger = _make_feat(Side.LEFT, palm_size=0.22)
-    selected2 = tracker.select((h_left_larger, h_right), t_ns=120_000_000)
+    selected2, _evs = tracker.select((h_left_larger, h_right), t_ns=120_000_000)
     assert selected2 is not None
     assert selected2.side == Side.RIGHT
 
     # Right hand lost at t = 200ms, only left hand present
     # Elapsed since last seen (120ms) is 80ms < 150ms -> still locked to Right, returns None
-    selected_grace = tracker.select((h_left_larger,), t_ns=200_000_000)
+    selected_grace, _evs = tracker.select((h_left_larger,), t_ns=200_000_000)
     assert selected_grace is None
 
     # At t = 300ms (elapsed 180ms > 150ms) -> timeout unlocks, Left hand can now engage
-    selected_after_timeout = tracker.select((h_left_larger,), t_ns=300_000_000)
+    selected_after_timeout, _evs = tracker.select((h_left_larger,), t_ns=300_000_000)
     assert selected_after_timeout is not None
     assert selected_after_timeout.side == Side.LEFT
     assert tracker.locked_side == Side.LEFT
@@ -112,11 +113,16 @@ def test_gesture_engine_intents_and_lifecycle() -> None:
     assert len(intents) == 0
     assert out.signals.cursor is None
 
-    # Process active frame with hand
+    # Process active frame with hand (advance past engage_ms=300ms)
     hand = _make_hand(Side.RIGHT)
     feat = _make_feat(Side.RIGHT, palm_size=0.15)
-    frame = HandFrame(t_capture_ns=100_000_000, t_infer_done_ns=100_000_000, seq=1, hands=(hand,))
-    out2, intents2 = engine.process(frame, (feat,))
+    # First frame at t = 100ms: hand detected, engage dwell running
+    frame1 = HandFrame(t_capture_ns=100_000_000, t_infer_done_ns=100_000_000, seq=1, hands=(hand,))
+    engine.process(frame1, (feat,))
+
+    # Second frame at t = 450ms (> 300ms): hand engaged, MoveTo emitted
+    frame2 = HandFrame(t_capture_ns=450_000_000, t_infer_done_ns=450_000_000, seq=2, hands=(hand,))
+    out2, intents2 = engine.process(frame2, (feat,))
     assert out2.signals.cursor == (0.5, 0.5)
     assert any(isinstance(it, MoveTo) for it in intents2)
 

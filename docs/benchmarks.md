@@ -29,5 +29,6 @@
 | **M0 Synthetic** | 2026-11-18 | Full simulated glass-to-emit | 500 | 35.12 ms | 52.84 ms | 58.40 ms | GREEN (≤ 60 ms) |
 | **M1 Taxi** | 2026-11-18 | Feature extraction + cursor filter + SendInput mock | 500 | 33.48 ms | 44.48 ms | 61.31 ms | GREEN (≤ 60 ms) |
 | **M2 Takeoff** | 2026-11-18 | Pipeline: features + pinch FSMs + cursor map + gate | 480 | 0.11 ms (pipe) / 33.6 ms (total) | 0.20 ms (pipe) / 44.6 ms (total) | 0.66 ms (pipe) | GREEN (≤ 60 ms) |
+| **M3 Climb** | 2026-11-18 | Pipeline: full gestures (pinch, scroll, zoom, dwell) + session/mode managers | 500 | 0.14 ms (pipe) / 33.7 ms (total) | 0.27 ms (pipe) / 44.7 ms (total) | 0.81 ms (pipe) | GREEN (≤ 60 ms) |
 
 *Note: In automated replay and unit test runs without physical sensor capture, the pipeline-only software processing latency (feature extraction + filters + gestures + mapping + NullBackend) is measured. Physical optical latency is documented in HUMAN_TODO.md.*
